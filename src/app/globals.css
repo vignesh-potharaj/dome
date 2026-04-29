@@ -27,3 +27,8 @@ body {
 section {
   /* Removed scroll-snap per user request */
 }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}

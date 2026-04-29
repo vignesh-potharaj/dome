@@ -3,6 +3,11 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CrossfadeSection } from '@/components/CrossfadeSection';
+import InsideDome from '@/components/InsideDome';
+import Packages from '@/components/Packages';
+import FindUs from '@/components/FindUs';
+import ReviewsStrip from '@/components/ReviewsStrip';
+import Footer from '@/components/Footer';
 
 export default function Page() {
   // Force page to top on mount
@@ -121,16 +126,72 @@ export default function Page() {
 
       {/* Section 5: celebrations — last section, no next image needed, 100vh */}
       <CrossfadeSection currentImage="/images/celebrations.png" nextImage="/images/celebrations.png" isLast>
-        <div className="flex flex-col items-center text-center">
-          <h2 className="font-display font-semibold text-[48px] md:text-[80px] text-[var(--color-cream)] leading-tight tracking-wide">
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', pointerEvents: 'auto' }}>
+
+          {/* Eyebrow */}
+          <p style={{ fontFamily: 'Inter', fontWeight: 300, fontSize: '11px', letterSpacing: '0.5em', color: '#B8A882', textTransform: 'uppercase' }}>
+            For Every Occasion
+          </p>
+
+          {/* Headline */}
+          <h2 style={{ fontFamily: 'Cormorant Garamond', fontWeight: 400, fontSize: '80px', letterSpacing: '0.1em', color: '#F5EDD8', lineHeight: 1 }}>
             ANY OCCASION
           </h2>
-          <div className="w-[80px] h-[1px] bg-[rgba(201,151,58,0.4)] my-6" />
-          <p className="font-sans font-light text-[13px] tracking-[0.12em] text-[var(--color-cream-muted)] uppercase">
-            Birthdays · Farewells · Get-togethers
+
+          {/* Divider */}
+          <div style={{ width: '60px', height: '1px', background: 'rgba(201,151,58,0.5)', margin: '4px 0' }} />
+
+          {/* Subtext */}
+          <p style={{ fontFamily: 'Inter', fontWeight: 300, fontSize: '13px', letterSpacing: '0.15em', color: '#B8A882' }}>
+            BIRTHDAYS · FAREWELLS · GET-TOGETHERS
           </p>
+
+          {/* CTA BUTTONS — ADD THESE */}
+          <div style={{ display: 'flex', gap: '16px', marginTop: '28px' }}>
+
+            {/* Primary */}
+            <a href="https://wa.me/910000000000?text=Hi%2C%20I'd%20like%20to%20book%20a%20dome"
+              style={{
+                fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                padding: '14px 36px',
+                background: '#C9973A', color: '#080604',
+                border: '1px solid #C9973A',
+                borderRadius: '2px', textDecoration: 'none',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#C9973A' }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#C9973A'; e.currentTarget.style.color = '#080604' }}
+            >
+              Book a Dome
+            </a>
+
+            {/* Secondary */}
+            <a href="#packages"
+              style={{
+                fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                padding: '14px 36px',
+                background: 'transparent', color: '#C9973A',
+                border: '1px solid #C9973A',
+                borderRadius: '2px', textDecoration: 'none',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#C9973A'; e.currentTarget.style.color = '#080604' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#C9973A' }}
+            >
+              View Packages
+            </a>
+
+          </div>
         </div>
       </CrossfadeSection>
+
+      <InsideDome />
+      <Packages />
+      <FindUs />
+      <ReviewsStrip />
+      <Footer />
 
     </main>
   );
