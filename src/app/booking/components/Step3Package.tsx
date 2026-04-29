@@ -59,7 +59,7 @@ interface Step3PackageProps {
 
 export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step3PackageProps) {
   
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>, ref: React.RefObject<HTMLDivElement>) => {
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>, ref: React.RefObject<HTMLDivElement | null>) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
@@ -69,7 +69,7 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
     ref.current.style.transform = `perspective(900px) rotateX(${rX}deg) rotateY(${rY}deg)`;
   };
 
-  const handleMouseLeave = (ref: React.RefObject<HTMLDivElement>) => {
+  const handleMouseLeave = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (!ref.current) return;
     ref.current.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
   };
