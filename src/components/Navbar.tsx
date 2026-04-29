@@ -75,14 +75,12 @@ export default function Navbar() {
       </div>
 
       {/* CTA Button */}
-      <a
-        href="https://wa.me/910000000000?text=Hi%2C%20I%27d%20like%20to%20book%20a%20dome%20at%20Dome%20Cafe%20Hyderabad"
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        href="/booking"
         className="font-sans font-medium text-[12px] tracking-[0.15em] text-[#C9973A] border border-[#C9973A] rounded-sm py-[10px] px-[24px] transition-all duration-300 hover:bg-[#C9973A] hover:text-[#080604] ml-[0.15em]"
       >
         BOOK NOW
-      </a>
+      </Link>
     </nav>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useRef, MouseEvent } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 const packages = [
   {
@@ -94,16 +95,14 @@ function PackageCard({ pkg, index }: { pkg: typeof packages[0]; index: number })
         </ul>
 
         <div className="mt-10 pt-6">
-          <a 
-            href={`https://wa.me/910000000000?text=Hi%2C%20I'd%20like%20to%20book%20the%20${pkg.name}%20Package`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link 
+            href="/booking"
             className={`block w-full text-center font-sans font-medium text-[12px] tracking-[0.15em] uppercase py-4 transition-colors duration-300
               ${isCenter ? 'bg-[#C9973A] text-[#080604] hover:bg-[#E8B96A]' : 'border border-[#C9973A] text-[#C9973A] hover:bg-[#C9973A] hover:text-[#080604]'}
             `}
           >
             Select Package
-          </a>
+          </Link>
         </div>
       </div>
     </motion.div>

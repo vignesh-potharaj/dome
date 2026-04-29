@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { CrossfadeSection } from '@/components/CrossfadeSection';
 import InsideDome from '@/components/InsideDome';
 import Packages from '@/components/Packages';
@@ -98,9 +99,9 @@ export default function Page() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-5 mt-10 pointer-events-auto">
-            <button className="bg-[var(--color-gold)] text-[#080604] font-sans font-medium text-[12px] tracking-[0.15em] py-[14px] px-[36px] rounded-sm transition-transform hover:scale-105">
+            <Link href="/booking" className="bg-[var(--color-gold)] text-[#080604] font-sans font-medium text-[12px] tracking-[0.15em] py-[14px] px-[36px] rounded-sm transition-transform hover:scale-105 inline-block">
               BOOK A DOME
-            </button>
+            </Link>
             <button className="bg-transparent border border-[var(--color-gold)] text-[var(--color-gold)] font-sans font-medium text-[12px] tracking-[0.15em] py-[14px] px-[36px] rounded-sm transition-all hover:bg-[var(--color-gold)] hover:text-[#080604]">
               VIEW PACKAGES
             </button>
@@ -150,7 +151,7 @@ export default function Page() {
           <div style={{ display: 'flex', gap: '16px', marginTop: '28px' }}>
 
             {/* Primary */}
-            <a href="https://wa.me/910000000000?text=Hi%2C%20I'd%20like%20to%20book%20a%20dome"
+            <Link href="/booking"
               style={{
                 fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
                 letterSpacing: '0.15em', textTransform: 'uppercase',
@@ -164,7 +165,7 @@ export default function Page() {
               onMouseLeave={e => { e.currentTarget.style.background = '#C9973A'; e.currentTarget.style.color = '#080604' }}
             >
               Book a Dome
-            </a>
+            </Link>
 
             {/* Secondary */}
             <a href="#packages"
