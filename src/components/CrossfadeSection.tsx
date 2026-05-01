@@ -28,7 +28,7 @@ export function CrossfadeSection({
   const currentOpacity = useTransform(
     scrollYProgress,
     [0, 0.65, 0.85],
-    [1, 1, 0]
+    isLast ? [1, 1, 1] : [1, 1, 0]
   );
 
   // Next image: invisible at rest, fades in during the LAST 25% of scroll
@@ -50,13 +50,13 @@ export function CrossfadeSection({
   const textOpacity = useTransform(
     scrollYProgress,
     [0, 0.45, 0.65],
-    [1, 1, 0]
+    isLast ? [1, 1, 1] : [1, 1, 0]
   );
 
   const textY = useTransform(
     scrollYProgress,
     [0, 0.65],
-    [0, -24]
+    isLast ? [0, 0] : [0, -24]
   );
 
   return (

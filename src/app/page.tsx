@@ -20,7 +20,7 @@ export default function Page() {
     <main style={{ paddingTop: '0' }}>
       
       {/* Section 1: dome → birthday */}
-      <CrossfadeSection currentImage="/images/dome.png" nextImage="/images/birthday.png">
+      <CrossfadeSection currentImage="/images/dome.png" nextImage="/images/birthday_v3.png">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -51,7 +51,7 @@ export default function Page() {
         {/* Scroll Cue */}
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-8 flex flex-col items-center pointer-events-auto cursor-pointer"
+          className="mt-12 flex flex-col items-center pointer-events-auto cursor-pointer"
         >
           <span className="font-sans font-light text-[11px] text-[var(--color-cream-muted)] tracking-[0.3em] mb-2 uppercase">Scroll</span>
           <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
@@ -61,7 +61,7 @@ export default function Page() {
       </CrossfadeSection>
 
       {/* Section 2: birthday → anniversary */}
-      <CrossfadeSection currentImage="/images/birthday.png" nextImage="/images/anniversary.png">
+      <CrossfadeSection currentImage="/images/birthday_v3.png" nextImage="/images/anniversary.png">
         <div className="flex flex-col items-center">
           <h2 className="font-display font-light text-[36px] md:text-[72px] tracking-[0.25em] text-[var(--color-cream)] leading-tight ml-[0.25em] text-center">
             CELEBRATE<br />
@@ -84,8 +84,8 @@ export default function Page() {
         </motion.div>
       </CrossfadeSection>
 
-      {/* Section 3: anniversary → proposal */}
-      <CrossfadeSection currentImage="/images/anniversary.png" nextImage="/images/proposal.png">
+      {/* Section 3: anniversary → genderreveal */}
+      <CrossfadeSection currentImage="/images/anniversary.png" nextImage="/images/genderreveal_v2.png">
         <div className="flex flex-col items-center text-center">
           <p className="font-display italic font-light text-[36px] md:text-[52px] text-[var(--color-cream-muted)] leading-tight">
             FOR THE ONES
@@ -95,7 +95,7 @@ export default function Page() {
           </h2>
           <div className="w-[80px] h-[1px] bg-[rgba(201,151,58,0.4)] my-6" />
           <p className="font-sans font-light text-[13px] tracking-[0.12em] text-[var(--color-cream-muted)] uppercase">
-            Anniversaries · Proposals · Romantic Dinners
+            Anniversaries · Gender Reveals · Romantic Dinners
           </p>
           
           <div className="flex flex-col sm:flex-row gap-5 mt-10 pointer-events-auto">
@@ -109,81 +109,56 @@ export default function Page() {
         </div>
       </CrossfadeSection>
 
-      {/* Section 4: proposal → celebrations */}
-      <CrossfadeSection currentImage="/images/proposal.png" nextImage="/images/celebrations.png">
+      {/* Section 4: genderreveal → celebrations */}
+      <CrossfadeSection currentImage="/images/genderreveal_v2.png" nextImage="/images/celebrations.png">
         <div className="flex flex-col items-center text-center">
           <p className="font-display italic font-light text-[36px] md:text-[52px] text-[var(--color-cream-muted)] leading-tight">
-            POP THE
+            THE BIG
           </p>
           <h2 className="font-display font-semibold text-[48px] md:text-[80px] text-[var(--color-cream)] leading-tight tracking-wide">
-            QUESTION
+            REVEAL
           </h2>
           <div className="w-[80px] h-[1px] bg-[rgba(201,151,58,0.4)] my-6" />
           <p className="font-sans font-light text-[13px] tracking-[0.12em] text-[var(--color-cream-muted)] uppercase">
-            Make it a moment to remember forever
+            Magical gender reveal celebrations
           </p>
         </div>
       </CrossfadeSection>
 
       {/* Section 5: celebrations — last section, no next image needed, 100vh */}
       <CrossfadeSection currentImage="/images/celebrations.png" nextImage="/images/celebrations.png" isLast>
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', pointerEvents: 'auto' }}>
+        <div className="flex flex-col items-center text-center pointer-events-auto">
 
           {/* Eyebrow */}
-          <p style={{ fontFamily: 'Inter', fontWeight: 300, fontSize: '11px', letterSpacing: '0.5em', color: '#B8A882', textTransform: 'uppercase' }}>
+          <p className="font-sans font-light text-[11px] tracking-[0.5em] text-[var(--color-cream-muted)] uppercase mb-3">
             For Every Occasion
           </p>
 
           {/* Headline */}
-          <h2 style={{ fontFamily: 'Cormorant Garamond', fontWeight: 400, fontSize: '80px', letterSpacing: '0.1em', color: '#F5EDD8', lineHeight: 1 }}>
+          <h2 className="font-display font-light text-[42px] sm:text-[60px] md:text-[80px] tracking-[0.1em] text-[var(--color-cream)] leading-none mb-4 whitespace-nowrap">
             ANY OCCASION
           </h2>
 
           {/* Divider */}
-          <div style={{ width: '60px', height: '1px', background: 'rgba(201,151,58,0.5)', margin: '4px 0' }} />
+          <div className="w-[60px] h-[1px] bg-[rgba(201,151,58,0.5)] mb-4" />
 
           {/* Subtext */}
-          <p style={{ fontFamily: 'Inter', fontWeight: 300, fontSize: '13px', letterSpacing: '0.15em', color: '#B8A882' }}>
+          <p className="font-sans font-light text-[13px] tracking-[0.15em] text-[var(--color-cream-muted)]">
             BIRTHDAYS · FAREWELLS · GET-TOGETHERS
           </p>
 
-          {/* CTA BUTTONS — ADD THESE */}
-          <div style={{ display: 'flex', gap: '16px', marginTop: '28px' }}>
-
-            {/* Primary */}
+          {/* CTA BUTTONS */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-7">
             <Link href="/booking"
-              style={{
-                fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
-                letterSpacing: '0.15em', textTransform: 'uppercase',
-                padding: '14px 36px',
-                background: '#C9973A', color: '#080604',
-                border: '1px solid #C9973A',
-                borderRadius: '2px', textDecoration: 'none',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#C9973A' }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#C9973A'; e.currentTarget.style.color = '#080604' }}
+              className="font-sans font-medium text-[12px] tracking-[0.15em] uppercase py-[14px] px-[36px] bg-[var(--color-gold)] text-[#080604] border border-[var(--color-gold)] rounded-[2px] transition-all hover:bg-transparent hover:text-[var(--color-gold)]"
             >
               Book a Dome
             </Link>
-
-            {/* Secondary */}
             <a href="#packages"
-              style={{
-                fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
-                letterSpacing: '0.15em', textTransform: 'uppercase',
-                padding: '14px 36px',
-                background: 'transparent', color: '#C9973A',
-                border: '1px solid #C9973A',
-                borderRadius: '2px', textDecoration: 'none',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#C9973A'; e.currentTarget.style.color = '#080604' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#C9973A' }}
+              className="font-sans font-medium text-[12px] tracking-[0.15em] uppercase py-[14px] px-[36px] bg-transparent text-[var(--color-gold)] border border-[var(--color-gold)] rounded-[2px] transition-all hover:bg-[var(--color-gold)] hover:text-[#080604]"
             >
               View Packages
             </a>
-
           </div>
         </div>
       </CrossfadeSection>
