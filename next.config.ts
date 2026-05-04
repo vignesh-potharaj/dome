@@ -2,10 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  devIndicators: {
-    appIsrStatus: false,
-    buildActivity: false,
-  },
+  // Removed devIndicators entries that are not supported by the NextConfig type
 };
 
 export default nextConfig;
