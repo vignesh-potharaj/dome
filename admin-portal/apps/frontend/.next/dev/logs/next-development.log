@@ -1,0 +1,6 @@
+{"timestamp":"00:00:04.152","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:04.152","source":"Server","level":"LOG","message":"  We detected TypeScript in your project and reconfigured your tsconfig.json file for you."}
+{"timestamp":"00:00:04.153","source":"Server","level":"LOG","message":"  The following mandatory changes were made to your tsconfig.json:\n"}
+{"timestamp":"00:00:04.154","source":"Server","level":"LOG","message":"  \t- moduleResolution was set to bundler (to match modern bundler resolution)"}
+{"timestamp":"00:00:04.155","source":"Server","level":"LOG","message":"  \t- jsx was set to react-jsx (next.js uses the React automatic runtime)"}
+{"timestamp":"00:00:04.156","source":"Server","level":"LOG","message":""}
