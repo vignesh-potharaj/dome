@@ -1,0 +1,21 @@
+{
+  "name": "admin-portal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev apps/frontend",
+    "build": "next build apps/frontend",
+    "start": "next start apps/frontend"
+  },
+  "dependencies": {
+    "next": "^13.0.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.0",
+    "@types/react": "^17.0.0",
+    "@types/node": "^14.0.0"
+  }
+}
