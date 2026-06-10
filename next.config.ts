@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   // If you prefer to force webpack instead, run the dev/build commands with
   // the `--webpack` flag or remove/migrate webpack customizations.
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+        port: '',
+        pathname: '/images/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
