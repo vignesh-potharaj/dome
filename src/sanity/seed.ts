@@ -66,7 +66,7 @@ async function seed() {
   };
 
   // 2. Seed Slides
-  const slides = [
+  const slides: any[] = [
     {
       _id: 'slide-1',
       _type: 'heroSection',
@@ -137,7 +137,7 @@ async function seed() {
   console.log('✅ Slides seeding completed.');
 
   // 3. Seed Packages
-  const packages = [
+  const packages: any[] = [
     {
       _id: 'package-classic',
       _type: 'domePackage',
@@ -178,7 +178,7 @@ async function seed() {
   console.log('✅ Packages seeding completed.');
 
   // 4. Seed Reviews
-  const reviews = [
+  const reviews: any[] = [
     {
       _id: 'review-1',
       _type: 'review',
