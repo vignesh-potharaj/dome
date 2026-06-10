@@ -4,7 +4,16 @@ import { useRef, MouseEvent } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-const packages = [
+export interface DomePackage {
+  _id?: string;
+  name: string;
+  price: string;
+  duration: string;
+  features: string[];
+  tag?: string | null;
+}
+
+const defaultPackages: DomePackage[] = [
   {
     name: 'CLASSIC',
     price: '₹999',
@@ -28,7 +37,7 @@ const packages = [
   },
 ];
 
-function PackageCard({ pkg, index }: { pkg: typeof packages[0]; index: number }) {
+function PackageCard({ pkg, index }: { pkg: DomePackage; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -84,7 +93,7 @@ function PackageCard({ pkg, index }: { pkg: typeof packages[0]; index: number })
         </p>
         
         <ul className="flex flex-col gap-4 flex-grow">
-          {pkg.features.map((feature, i) => (
+          {pkg.features && pkg.features.map((feature, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="text-[#C9973A] text-[10px] mt-1">✦</span>
               <span className="font-sans font-light text-[13px] text-[#B8A882] leading-relaxed">
@@ -109,7 +118,9 @@ function PackageCard({ pkg, index }: { pkg: typeof packages[0]; index: number })
   );
 }
 
-export default function Packages() {
+export default function Packages({ packages = defaultPackages }: { packages?: DomePackage[] }) {
+  const displayPackages = packages.length > 0 ? packages : defaultPackages;
+
   return (
     <section id="packages" className="w-full py-32 px-6 md:px-12 relative overflow-hidden" style={{ background: 'radial-gradient(circle at center, #080604 0%, #0D0A07 100%)' }}>
       <div className="max-w-6xl mx-auto flex flex-col items-center">
@@ -134,7 +145,7 @@ export default function Packages() {
         </div>
 
         <div className="flex flex-col md:flex-row w-full gap-8 md:gap-6 items-stretch md:items-center">
-          {packages.map((pkg, i) => (
+          {displayPackages.map((pkg, i) => (
             <PackageCard key={pkg.name} pkg={pkg} index={i} />
           ))}
         </div>

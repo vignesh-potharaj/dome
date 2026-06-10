@@ -1,6 +1,13 @@
 'use client';
 
-const reviews = [
+export interface Review {
+  _id?: string;
+  name: string;
+  text: string;
+  stars: number;
+}
+
+const defaultReviews: Review[] = [
   { name: 'Priya M.', text: 'The dome was magical. Best birthday surprise ever.', stars: 5 },
   { name: 'Arjun K.', text: 'Proposed here. She said yes. The setup was perfect.', stars: 5 },
   { name: 'Sneha R.', text: 'Absolutely stunning experience. Worth every rupee.', stars: 5 },
@@ -8,7 +15,7 @@ const reviews = [
   { name: 'Divya S.', text: 'The team handled everything. We just showed up and celebrated.', stars: 5 },
 ];
 
-function ReviewCard({ name, text, stars }: { name: string; text: string; stars: number }) {
+function ReviewCard({ name, text, stars }: Review) {
   return (
     <div className="w-[320px] shrink-0 border border-[rgba(201,151,58,0.15)] p-7 bg-[#080604] flex flex-col justify-between h-full">
       <div>
@@ -26,7 +33,9 @@ function ReviewCard({ name, text, stars }: { name: string; text: string; stars: 
   );
 }
 
-export default function ReviewsStrip() {
+export default function ReviewsStrip({ reviews = defaultReviews }: { reviews?: Review[] }) {
+  const displayReviews = reviews.length > 0 ? reviews : defaultReviews;
+
   return (
     <section className="relative w-full py-24 bg-[#080604] overflow-hidden border-t border-[rgba(201,151,58,0.1)]">
       
@@ -41,7 +50,7 @@ export default function ReviewsStrip() {
         className="flex gap-6 hover:[animation-play-state:paused]" 
         style={{ animation: 'marquee 30s linear infinite', width: 'max-content' }}
       >
-        {[...reviews, ...reviews].map((r, i) => (
+        {[...displayReviews, ...displayReviews].map((r, i) => (
           <ReviewCard key={i} {...r} />
         ))}
       </div>
