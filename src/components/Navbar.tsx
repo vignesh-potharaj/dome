@@ -13,6 +13,49 @@ const navLinks = [
 
 export default function Navbar() {
   const [activeSection, setActiveSection] = useState('');
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Handle scroll behavior to hide/show navbar
+  useEffect(() => {
+    const threshold = 10; // 10px threshold to prevent jitter
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Handle iOS elastic scroll / rubber-banding (negative scroll)
+      if (currentScrollY < 0) {
+        return;
+      }
+
+      // Always show navbar at the very top of the page
+      if (currentScrollY < 50) {
+        setIsVisible(true);
+        setLastScrollY(currentScrollY);
+        return;
+      }
+
+      // If scroll distance is less than threshold, do nothing
+      if (Math.abs(currentScrollY - lastScrollY) < threshold) {
+        return;
+      }
+
+      if (currentScrollY > lastScrollY) {
+        // Scrolling down
+        setIsVisible(false);
+      } else {
+        // Scrolling up
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   // Handle intersection observer to set active section (optional enhancement)
   useEffect(() => {
@@ -43,6 +86,8 @@ export default function Navbar() {
       WebkitBackdropFilter: 'blur(16px)',
       background: 'rgba(8,6,4,0.65)',
       borderBottom: '1px solid rgba(201,151,58,0.15)',
+      transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+      transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
     }} className="flex items-center justify-between px-6 md:px-12">
       {/* Logo */}
       <Link href="/" className="flex flex-col items-center justify-center pt-1 hover:opacity-80 transition-opacity">
