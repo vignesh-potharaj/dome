@@ -13,8 +13,13 @@ const navLinks = [
 
 export default function Navbar() {
   const [activeSection, setActiveSection] = useState('');
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Initialize lastScrollY to current scroll position on mount
+  useEffect(() => {
+    setLastScrollY(window.scrollY);
+  }, []);
 
   // Handle scroll behavior to hide/show navbar
   useEffect(() => {
@@ -25,13 +30,6 @@ export default function Navbar() {
 
       // Handle iOS elastic scroll / rubber-banding (negative scroll)
       if (currentScrollY < 0) {
-        return;
-      }
-
-      // Always show navbar at the very top of the page
-      if (currentScrollY < 50) {
-        setIsVisible(true);
-        setLastScrollY(currentScrollY);
         return;
       }
 
