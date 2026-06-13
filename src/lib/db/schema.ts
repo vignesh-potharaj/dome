@@ -54,9 +54,20 @@ export const otpSessions = pgTable('otp_sessions', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Admins Table
+export const admins = pgTable('admins', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).unique().notNull(),
+  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  role: varchar('role', { length: 50 }).notNull(), // 'super_admin', 'branch_admin'
+  branchId: varchar('branch_id', { length: 50 }).references(() => branches.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Relationships
 export const branchesRelations = relations(branches, ({ many }) => ({
   bookings: many(bookings),
+  admins: many(admins),
 }));
 
 export const customersRelations = relations(customers, ({ many }) => ({
@@ -71,5 +82,12 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   customer: one(customers, {
     fields: [bookings.customerId],
     references: [customers.id],
+  }),
+}));
+
+export const adminsRelations = relations(admins, ({ one }) => ({
+  branch: one(branches, {
+    fields: [admins.branchId],
+    references: [branches.id],
   }),
 }));
