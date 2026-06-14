@@ -5,7 +5,7 @@ import { relations } from 'drizzle-orm';
 export const branches = pgTable('branches', {
   id: varchar('id', { length: 50 }).primaryKey(), // e.g. 'kokapet', 'sainikpuri'
   name: varchar('name', { length: 100 }).notNull(),
-  status: varchar('status', { length: 20 }).default('active').notNull(), // 'active', 'soft_disabled', 'hard_disabled'
+  status: varchar('status', { length: 20 }).default('active').notNull(), // 'active', 'disabled'
   capacity: integer('capacity').default(6).notNull(), // capacity per slot
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

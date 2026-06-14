@@ -25,7 +25,7 @@ This document supersedes v1.0. Every section incorporates the five key critique 
 | Login Placement | Step 1 — before browsing | Step 7 — at checkout |
 | WhatsApp API | OTP + all notifications | OTP + SMS fallback; selective WA use |
 | Database Architecture | Separate accounts per branch | Single multi-tenant DB with RLS |
-| Branch Disable Toggle | Simple on/off toggle | Soft Disable + Hard Disable with alerts |
+| Branch Disable Toggle | Simple on/off toggle | Branch Disable (soft disable mechanism) |
 | Anniversary CRM | Direct WhatsApp trigger | Cron scheduler + DPDP-compliant opt-in |
 
 ---
@@ -110,27 +110,17 @@ Version 1.0 proposed separate database accounts per branch. This has been replac
 
 ### 2.2 Location Serviceability Toggle — Revised
 
-The original single toggle has been replaced with a **two-mode system** that handles active bookings safely during an emergency closure.
+The original simple toggle has been replaced with a **Branch Disable** mechanism designed to prevent new bookings while preserving existing commitments.
 
-#### Soft Disable
-*Use when: Planned maintenance, staff shortage, or temporary closure with advance notice.*
+*Use when: Planned maintenance, staff shortage, temporary closure, or scheduled downtime.*
 
-- Blocks all new bookings for this branch
-- Website shows: "This location is temporarily unavailable for new bookings"
-- Existing upcoming bookings remain active and unaffected
-- Calendar and appointment manager stay fully functional
-- Admin can still message individual customers manually
+- Blocks all new bookings for this branch.
+- Website shows: "This location is temporarily unavailable for new bookings".
+- Existing upcoming bookings remain active and unaffected.
+- Calendar and appointment manager stay fully functional.
+- Admin can still message individual customers manually.
 
-#### Hard Disable
-*Use when: Emergency closure — power outage, safety issue, sudden unavailability.*
-
-- Blocks new bookings immediately
-- System scans all bookings within the next 48 hours
-- Automated WhatsApp alert sent to each affected customer
-- Message offers two options: **Reschedule** or **Full Refund**
-- Admin receives a summary of all impacted bookings for follow-up
-
-> ⚠️ **Edge Case Handled:** Without Hard Disable, an emergency closure would leave customers arriving at a closed venue with no prior notice. This feature protects Dome Cafe's reputation and prevents negative reviews from operationally avoidable scenarios.
+> ℹ️ **Operational Note:** In case of emergency closures, administrators can manually contact affected customers using the calendar and appointment manager quick-message actions.
 
 ### 2.3 Calendar View
 
@@ -138,7 +128,7 @@ The original single toggle has been replaced with a **two-mode system** that han
 - Colour-coded event blocks: Confirmed (green), Pending Payment (amber), Rescheduled (blue), Cancelled (red)
 - Clicking an event navigates to the full Appointment Detail page
 - Admin can manually block dates for private events or maintenance
-- Hard-disabled dates appear as a full-day red block with a lock icon
+- Disabled dates appear as a full-day block with a lock icon
 
 ### 2.4 Appointment Manager
 
@@ -170,7 +160,7 @@ Admins control what appears on the customer-facing website — no developer need
 - **Add-Ons** — create extras with individual pricing
 - **Branch Settings** — name, address, phone, hours, slot duration, capacity per slot
 - **Credentials** — Razorpay and WhatsApp API keys (securely stored)
-- **Serviceability Toggle** — Soft Disable / Hard Disable per branch
+- **Serviceability Toggle** — Enable / Disable per branch
 
 ---
 
@@ -247,7 +237,7 @@ All five critique points have been fully resolved:
 - ✅ **Login moved to checkout** — reduces drop-off, leverages endowment effect
 - ✅ **WhatsApp costs controlled** — selective use + SMS fallback for OTP
 - ✅ **Database unified** — single PostgreSQL instance with branch-level RLS
-- ✅ **Branch toggle upgraded** — Soft Disable + Hard Disable with automated customer alerts
+- ✅ **Branch toggle upgraded** — Branch Disable toggle to halt new bookings while keeping existing ones active
 - ✅ **Anniversary CRM compliant** — cron scheduler + DPDP Act opt-in consent
 
 ---

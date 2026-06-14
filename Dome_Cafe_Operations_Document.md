@@ -1,8 +1,5 @@
 # The Dome Cafe Kokapet – Business Information & Operations Document
 
-## Business Contact
-- Email: domecafe@zohomail.in
-- Phone: +91 95059 20660 (Photographer coordination reference)
 
 ---
 
