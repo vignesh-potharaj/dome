@@ -89,6 +89,14 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
           {booking.ledName && (
             <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">LED Name:</span><span className="text-[#F5EDD8] text-[13px]">{booking.ledName}</span></div>
           )}
+          {booking.cakeOption && booking.cakeOption !== 'none' && (
+            <div className="flex justify-between mb-3">
+              <span className="text-[#B8A882] text-[13px]">Cake:</span>
+              <span className="text-[#F5EDD8] text-[13px] capitalize">
+                {booking.cakeOption.replace('-', ' ')} {booking.eggless ? '(Eggless)' : ''}
+              </span>
+            </div>
+          )}
           {booking.customer.cakeMessage && (
             <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">Cake Message:</span><span className="text-[#F5EDD8] text-[13px]">{booking.customer.cakeMessage}</span></div>
           )}
@@ -181,6 +189,13 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
             <p className="font-sans font-light text-[13px] text-[#F5EDD8] mb-2 font-medium">5. DOME CAPACITY & GUESTS</p>
             <p className="font-sans font-light text-[13px] text-[#B8A882] mb-6 leading-relaxed">
               Each dome accommodates approximately 7–8 guests. There is no restriction on guest count, and package pricing remains unchanged regardless of the number of guests.
+            </p>
+
+            <div className="w-full h-[1px] bg-[rgba(201,151,58,0.15)] mb-6" />
+
+            <p className="font-sans font-light text-[13px] text-[#8B3A3A] mb-2 font-medium">6. STRICTLY PROHIBITED ITEMS</p>
+            <p className="font-sans font-light text-[13px] text-[#B8A882] mb-6 leading-relaxed">
+              To ensure safety and maintain venue decor standards, customers are strictly prohibited from bringing outside items, including: outside food/beverages, party poppers, snow spray, sashes, tiaras, blindfolds, outside cakes, bouquets, or similar decorative materials.
             </p>
 
           </div>
