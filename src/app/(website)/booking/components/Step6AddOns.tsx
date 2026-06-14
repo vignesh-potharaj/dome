@@ -4,79 +4,174 @@ import { motion } from 'framer-motion';
 
 export const addOnsList = [
   {
-    id: 'photo-booth',
-    name: 'Photo Booth Props',
-    desc: 'Curated prop box: signs, frames, hats, hearts',
-    price: 199,
-    icon: '📸',
+    id: 'led-name',
+    name: 'Custom LED Name Sign',
+    desc: 'Light-up letters customized with your name or message (₹49 per letter)',
+    price: 49,
+    icon: '💡',
   },
   {
-    id: 'fog-machine',
-    name: 'Fog Machine Entry',
-    desc: 'Low-lying fog as you enter the dome — cinematic',
-    price: 299,
-    icon: '🌫️',
+    id: 'sparkling-candle',
+    name: 'Sparkling Candle',
+    desc: 'High-sparkle pyrotechnic candle for cake cutting ceremony',
+    price: 70,
+    icon: '✨',
   },
   {
-    id: 'petal-shower',
-    name: 'Rose Petal Shower',
-    desc: 'Petals rain from the dome ceiling at your signal',
-    price: 249,
-    icon: '🌹',
+    id: 'blindfold',
+    name: 'Satin Blindfold',
+    desc: 'Premium satin blindfold for a perfect surprise entry experience',
+    price: 100,
+    icon: '🙈',
   },
   {
-    id: 'guitarist',
-    name: 'Live Guitarist (30 min)',
-    desc: 'Acoustic performance inside the dome',
-    price: 799,
-    icon: '🎸',
+    id: 'personalised-letter',
+    name: 'Personalised Letter',
+    desc: 'A beautifully written message printed on premium parchment paper',
+    price: 100,
+    icon: '✉️',
   },
   {
-    id: 'polaroid',
-    name: 'Polaroid Prints ×20',
-    desc: 'Instant printed memories, delivered before you leave',
-    price: 349,
+    id: 'sash-tiara',
+    name: 'Celebration Sash & Tiara',
+    desc: 'Elegant satin sash and crystal tiara for the guest of honour',
+    price: 200,
+    icon: '👑',
+  },
+  {
+    id: 'photo-frame',
+    name: 'Memory Photo Frame',
+    desc: 'Keep the memory alive with a beautifully designed tabletop photo frame',
+    price: 200,
     icon: '🖼️',
   },
   {
-    id: 'message-bottle',
-    name: 'Message in a Bottle',
-    desc: 'A handwritten note sealed in a vintage glass bottle',
-    price: 199,
-    icon: '💌',
+    id: 'foil-balloon',
+    name: '1 Foil Balloon',
+    desc: 'Single premium helium-filled metallic foil balloon (Heart or Star)',
+    price: 200,
+    icon: '🎈',
   },
   {
-    id: 'mocktail',
-    name: 'Signature Mocktail Set',
-    desc: 'Two themed mocktails served in special glasses',
-    price: 299,
-    icon: '🥂',
+    id: 'photo-prints',
+    name: '5 Photo Prints',
+    desc: 'Five high-gloss instant prints of your special moments',
+    price: 200,
+    icon: '📸',
   },
   {
-    id: 'video-reel',
-    name: 'Cinematic Video Reel',
-    desc: '60-sec edited reel of your session — shared in 48hrs',
-    price: 599,
-    icon: '🎬',
+    id: 'balloon-stands',
+    name: 'Balloon Stands (x2)',
+    desc: 'Two elegant multi-balloon stands matching your colour theme',
+    price: 400,
+    icon: '📍',
+  },
+  {
+    id: 'heart-balloons',
+    name: 'Heart-Shaped Balloons',
+    desc: 'A beautiful bouquet of helium heart-shaped balloons',
+    price: 500,
+    icon: '💖',
+  },
+  {
+    id: 'rose-bouquet',
+    name: 'Premium Rose Bouquet',
+    desc: 'A hand-tied bouquet of fresh, selected red roses',
+    price: 600,
+    icon: '💐',
+  },
+  {
+    id: 'flower-entrance',
+    name: 'Rose Petals Entrance',
+    desc: 'Pathway carpeted with fresh, fragrant rose petals',
+    price: 750,
+    icon: '🌹',
+  },
+  {
+    id: 'chrome-balloons',
+    name: 'Chrome Balloons Upgrade',
+    desc: 'Upgrade standard balloons to premium high-shine metallic chrome balloons',
+    price: 1000,
+    icon: '✨',
+  },
+  {
+    id: 'coldfire-2',
+    name: '2 Coldfire Entry',
+    desc: 'Two cold-spark pyrotechnic launchers for a dramatic entrance',
+    price: 1000,
+    icon: '🎆',
+  },
+  {
+    id: 'coldfire-4',
+    name: '4 Coldfire Entry',
+    desc: 'Four cold-spark pyrotechnic launchers for a spectacular entrance',
+    price: 1500,
+    icon: '🎆',
+  },
+  {
+    id: 'coldfire-6',
+    name: '6 Coldfire Entry',
+    desc: 'Six cold-spark pyrotechnic launchers for the ultimate grand entrance',
+    price: 2000,
+    icon: '🎆',
+  },
+  {
+    id: 'fog-entry',
+    name: 'Heavy Fog Entry',
+    desc: 'Low-lying dry ice heavy fog effect creating a walking-on-clouds feeling',
+    price: 1500,
+    icon: '🌫️',
+  },
+  {
+    id: 'photographer',
+    name: 'Professional Photographer',
+    desc: 'Dedicated photographer for 1 hour, including digital delivery of edited photos',
+    price: 2500,
+    icon: '📷',
+  },
+  {
+    id: 'guitarist',
+    name: 'Acoustic Guitarist',
+    desc: 'Live musician playing romantic acoustic melodies inside your dome',
+    price: 5000,
+    icon: '🎸',
   },
 ];
 
 interface Step6AddOnsProps {
   selectedAddOns: string[];
+  ledName: string;
   totalPrice: number;
-  onUpdate: (key: string, value: string[]) => void;
+  onUpdate: (key: string, value: any) => void;
   onNext: () => void;
 }
 
-export default function Step6AddOns({ selectedAddOns, totalPrice, onUpdate, onNext }: Step6AddOnsProps) {
+export default function Step6AddOns({ selectedAddOns, ledName, totalPrice, onUpdate, onNext }: Step6AddOnsProps) {
   
   const handleToggle = (id: string) => {
-    if (selectedAddOns.includes(id)) {
-      onUpdate('addOns', selectedAddOns.filter(a => a !== id));
+    let newAddOns = [...selectedAddOns];
+    
+    if (newAddOns.includes(id)) {
+      newAddOns = newAddOns.filter(a => a !== id);
+      if (id === 'led-name') {
+        onUpdate('ledName', '');
+      }
     } else {
-      onUpdate('addOns', [...selectedAddOns, id]);
+      // Mutual exclusion for Coldfire entry options
+      if (id === 'coldfire-2') {
+        newAddOns = newAddOns.filter(a => a !== 'coldfire-4' && a !== 'coldfire-6');
+      } else if (id === 'coldfire-4') {
+        newAddOns = newAddOns.filter(a => a !== 'coldfire-2' && a !== 'coldfire-6');
+      } else if (id === 'coldfire-6') {
+        newAddOns = newAddOns.filter(a => a !== 'coldfire-2' && a !== 'coldfire-4');
+      }
+      newAddOns.push(id);
     }
+    
+    onUpdate('addOns', newAddOns);
   };
+
+  const ledLettersCount = ledName ? ledName.replace(/[^a-zA-Z0-9]/g, '').length : 0;
 
   return (
     <div className="flex flex-col items-center justify-start min-h-[100vh] w-full pt-[100px] px-6 pb-[140px] overflow-y-auto">
@@ -88,7 +183,7 @@ export default function Step6AddOns({ selectedAddOns, totalPrice, onUpdate, onNe
         Select as many as you like — all added to your booking
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-6xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full max-w-6xl">
         {addOnsList.map((addon) => {
           const isSelected = selectedAddOns.includes(addon.id);
 
@@ -96,7 +191,7 @@ export default function Step6AddOns({ selectedAddOns, totalPrice, onUpdate, onNe
             <div
               key={addon.id}
               onClick={() => handleToggle(addon.id)}
-              className="relative w-full p-6 rounded-[2px] cursor-pointer transition-all duration-300 flex flex-col"
+              className="relative w-full p-6 rounded-[2px] cursor-pointer transition-all duration-300 flex flex-col justify-between"
               style={{
                 border: isSelected ? '1px solid #C9973A' : '1px solid rgba(201,151,58,0.15)',
                 background: isSelected ? 'rgba(201,151,58,0.10)' : 'rgba(201,151,58,0.03)',
@@ -108,22 +203,48 @@ export default function Step6AddOns({ selectedAddOns, totalPrice, onUpdate, onNe
                 if (!isSelected) e.currentTarget.style.border = '1px solid rgba(201,151,58,0.15)';
               }}
             >
-              {isSelected && (
-                <div className="absolute top-4 right-4 text-[#080604] bg-[#C9973A] w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold">
-                  ✓
-                </div>
-              )}
+              <div>
+                {isSelected && (
+                  <div className="absolute top-4 right-4 text-[#080604] bg-[#C9973A] w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold z-10">
+                    ✓
+                  </div>
+                )}
 
-              <span className="text-[28px]">{addon.icon}</span>
-              <h3 className="font-sans font-medium text-[14px] text-[#F5EDD8] mt-3">
-                {addon.name}
-              </h3>
-              <p className="font-sans font-light text-[12px] text-[#B8A882] mt-1 flex-grow">
-                {addon.desc}
-              </p>
-              <p className="font-display font-normal text-[18px] text-[#C9973A] mt-3">
-                +₹{addon.price}
-              </p>
+                <span className="text-[28px]">{addon.icon}</span>
+                <h3 className="font-sans font-medium text-[14px] text-[#F5EDD8] mt-3">
+                  {addon.name}
+                </h3>
+                <p className="font-sans font-light text-[12px] text-[#B8A882] mt-1 mb-4 leading-relaxed">
+                  {addon.desc}
+                </p>
+              </div>
+
+              <div>
+                <p className="font-display font-normal text-[18px] text-[#C9973A] mt-2 mb-2">
+                  {addon.id === 'led-name' ? '₹49 / letter' : `+₹${addon.price}`}
+                </p>
+
+                {addon.id === 'led-name' && isSelected && (
+                  <div 
+                    className="mt-3 w-full" 
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <label className="block text-[10px] uppercase tracking-wider text-[#B8A882] mb-1 font-sans">
+                      Enter LED Name:
+                    </label>
+                    <input
+                      type="text"
+                      value={ledName}
+                      onChange={(e) => onUpdate('ledName', e.target.value.toUpperCase())}
+                      placeholder="e.g. PRIYA"
+                      className="w-full bg-[rgba(8,6,4,0.7)] border border-[rgba(201,151,58,0.4)] rounded-[2px] p-2 text-[#F5EDD8] font-sans text-[12px] outline-none focus:border-[#C9973A]"
+                    />
+                    <p className="text-[10px] text-[#C9973A] mt-1.5 font-sans">
+                      {ledLettersCount} letters = +₹{ledLettersCount * 49}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

@@ -24,6 +24,7 @@ export default function BookingPage() {
     cakeOption: null as string | null,
     sparklers: false,
     addOns: [] as string[],
+    ledName: '',
     customer: {
       name: '',
       phone: '',
@@ -31,6 +32,7 @@ export default function BookingPage() {
       occasion: '',
       guestCount: '',
       celebrantName: '',
+      cakeMessage: '',
       specialNote: '',
     },
     agreedToTerms: false,
@@ -46,6 +48,10 @@ export default function BookingPage() {
     const cakePrice = b.cakeOption === 'custom' ? 499 : (b.cakeOption && b.cakeOption !== 'none' ? 349 : 0);
     const sparklerPrice = b.sparklers ? 149 : 0;
     const addOnsTotal = b.addOns.reduce((sum, id) => {
+      if (id === 'led-name') {
+        const lettersCount = b.ledName ? b.ledName.replace(/[^a-zA-Z0-9]/g, '').length : 0;
+        return sum + lettersCount * 49;
+      }
       return sum + (addOnsList.find(a => a.id === id)?.price || 0);
     }, 0);
     return packagePrice + cakePrice + sparklerPrice + addOnsTotal;
@@ -60,7 +66,7 @@ export default function BookingPage() {
       case 3: return <Step3Package selectedPackage={booking.package} onUpdate={update} onNext={next} />;
       case 4: return <Step4Balloon selectedColor={booking.balloonColor} onUpdate={update} onNext={next} />;
       case 5: return <Step5Cake selectedCake={booking.cakeOption} sparklers={booking.sparklers} onUpdate={update} onNext={next} />;
-      case 6: return <Step6AddOns selectedAddOns={booking.addOns} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
+      case 6: return <Step6AddOns selectedAddOns={booking.addOns} ledName={booking.ledName} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
       case 7: return <Step7Details booking={booking} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
       case 8: return <Step8Checkout booking={booking} totalPrice={totalPrice} onUpdate={update} />;
       default: return null;

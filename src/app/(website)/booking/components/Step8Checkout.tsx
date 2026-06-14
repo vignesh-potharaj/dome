@@ -85,6 +85,17 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
           <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">Time:</span><span className="text-[#F5EDD8] text-[13px]">{booking.slot}</span></div>
           <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">Package:</span><span className="text-[#F5EDD8] text-[13px] capitalize">{booking.package}</span></div>
           <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">Guests:</span><span className="text-[#F5EDD8] text-[13px]">{booking.customer.guestCount}</span></div>
+          
+          {booking.ledName && (
+            <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">LED Name:</span><span className="text-[#F5EDD8] text-[13px]">{booking.ledName}</span></div>
+          )}
+          {booking.customer.cakeMessage && (
+            <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">Cake Message:</span><span className="text-[#F5EDD8] text-[13px]">{booking.customer.cakeMessage}</span></div>
+          )}
+          {booking.addOns.length > 0 && (
+            <div className="flex justify-between mb-3"><span className="text-[#B8A882] text-[13px]">Add-ons:</span><span className="text-[#F5EDD8] text-[13px]">{booking.addOns.length} selected</span></div>
+          )}
+
           <div className="flex justify-between mt-4 pt-4 border-t border-[rgba(201,151,58,0.15)]"><span className="text-[#C9973A] font-medium text-[13px]">Total Paid:</span><span className="text-[#C9973A] font-medium text-[13px]">₹{advance} (advance)</span></div>
           <div className="flex justify-between mt-2"><span className="text-[#B8A882] text-[13px]">Balance Due:</span><span className="text-[#B8A882] text-[13px]">₹{totalPrice - advance} (at venue)</span></div>
         </div>
@@ -145,7 +156,7 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
 
             <div className="w-full h-[1px] bg-[rgba(201,151,58,0.15)] mb-6" />
 
-            <p className="font-sans font-light text-[13px] text-[#F5EDD8] mb-2 font-medium">3. RESCHEDULING ✦ We're flexible</p>
+            <p className="font-sans font-light text-[13px] text-[#F5EDD8] mb-2 font-medium">3. RESCHEDULING</p>
             <div style={{
               borderLeft: '3px solid #C9973A',
               margin: '12px 0 24px 0',
@@ -153,22 +164,23 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
               padding: '16px 20px',
               borderRadius: '0 4px 4px 0',
             }}>
-              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-2 leading-relaxed">✅ Rescheduling is allowed with a minimum of 24 hours notice.</p>
-              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-2 leading-relaxed">✅ You may reschedule your booking up to 2 times at no extra charge.</p>
-              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-3 leading-relaxed">✅ Subject to slot availability at your chosen location.</p>
+              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-2 leading-relaxed">✅ Rescheduling is allowed by informing us 2–3 days in advance.</p>
+              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-2 leading-relaxed">✅ Rescheduling is subject to slot availability.</p>
               <p className="font-sans font-medium text-[13px] text-[#C9973A]">To reschedule, WhatsApp us at +91 XXXXXXXXXX with your booking ID.</p>
             </div>
 
             <div className="w-full h-[1px] bg-[rgba(201,151,58,0.15)] mb-6" />
 
-            <p className="font-sans font-light text-[13px] text-[#F5EDD8] mb-2 font-medium">4. ARRIVAL</p>
+            <p className="font-sans font-light text-[13px] text-[#F5EDD8] mb-2 font-medium">4. NO SHOW POLICY</p>
             <p className="font-sans font-light text-[13px] text-[#B8A882] mb-6 leading-relaxed">
-              Please arrive at least 10 minutes before your slot. Late arrivals beyond 20 minutes may result in a shortened session without refund for lost time.
+              Failure to arrive at your scheduled time is considered a NO SHOW. This will result in automatic booking cancellation with no refunds and no rescheduling allowed.
             </p>
 
-            <p className="font-sans font-light text-[13px] text-[#F5EDD8] mb-2 font-medium">5. DOME CAPACITY</p>
+            <div className="w-full h-[1px] bg-[rgba(201,151,58,0.15)] mb-6" />
+
+            <p className="font-sans font-light text-[13px] text-[#F5EDD8] mb-2 font-medium">5. DOME CAPACITY & GUESTS</p>
             <p className="font-sans font-light text-[13px] text-[#B8A882] mb-6 leading-relaxed">
-              Each dome accommodates a maximum of 6 guests. Additional guests beyond your booking will not be permitted inside the dome.
+              Each dome accommodates approximately 7–8 guests. There is no restriction on guest count, and package pricing remains unchanged regardless of the number of guests.
             </p>
 
           </div>
@@ -186,7 +198,7 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
               {booking.agreedToTerms && <span className="text-[#080604] text-[10px] font-bold">✓</span>}
             </div>
             <span className="font-sans font-light text-[13px] text-[#B8A882] leading-[1.6]">
-              I have read and agree to the Dome Cafe booking terms and conditions. I understand that my advance payment is <strong className="text-[#F5EDD8] font-medium">non-refundable</strong> but that <strong className="text-[#C9973A] font-medium">rescheduling is available</strong> with 24 hours notice.
+              I have read and agree to the Dome Cafe booking terms and conditions. I understand that my advance payment is <strong className="text-[#F5EDD8] font-medium">non-refundable</strong> but that <strong className="text-[#C9973A] font-medium">rescheduling is available</strong> with 2–3 days notice.
             </span>
           </label>
 

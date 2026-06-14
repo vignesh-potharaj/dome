@@ -3,16 +3,6 @@
 import { useState } from 'react';
 import BookingSummary from './BookingSummary';
 
-const fields = [
-  { id: 'name',         label: 'Your Full Name',          type: 'text',   placeholder: 'e.g. Priya Sharma',     required: true },
-  { id: 'phone',        label: 'WhatsApp Number',         type: 'tel',    placeholder: '+91 98765 43210',        required: true },
-  { id: 'email',        label: 'Email Address',           type: 'email',  placeholder: 'for confirmation mail',  required: true },
-  { id: 'occasion',     label: 'Occasion',                type: 'select', options: ['Birthday', 'Anniversary', 'Proposal', 'Celebration', 'Date Night', 'Baby Shower', 'Other'], required: true },
-  { id: 'guestCount',   label: 'Number of Guests',        type: 'select', options: ['2', '3', '4', '5', '6+'],  required: true },
-  { id: 'celebrantName',label: 'Name of the Celebrant',  type: 'text',   placeholder: 'Who are we celebrating?',required: false },
-  { id: 'specialNote',  label: 'Special Request / Note',  type: 'textarea',placeholder: 'Anything specific you\'d like us to know…', required: false },
-];
-
 interface Step7DetailsProps {
   booking: any;
   totalPrice: number;
@@ -22,6 +12,19 @@ interface Step7DetailsProps {
 
 export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: Step7DetailsProps) {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+  const hasCake = booking.cakeOption && booking.cakeOption !== 'none';
+
+  const fields = [
+    { id: 'name',         label: 'Your Full Name',          type: 'text',   placeholder: 'e.g. Priya Sharma',     required: true },
+    { id: 'phone',        label: 'WhatsApp Number',         type: 'tel',    placeholder: '+91 98765 43210',        required: true },
+    { id: 'email',        label: 'Email Address',           type: 'email',  placeholder: 'for confirmation mail',  required: true },
+    { id: 'occasion',     label: 'Occasion',                type: 'select', options: ['Birthday', 'Anniversary', 'Proposal', 'Celebration', 'Date Night', 'Baby Shower', 'Other'], required: true },
+    { id: 'guestCount',   label: 'Number of Guests',        type: 'select', options: ['2', '3', '4', '5', '6+'],  required: true },
+    { id: 'celebrantName',label: 'Name of the Celebrant',  type: 'text',   placeholder: 'Who are we celebrating?',required: false },
+    ...(hasCake ? [{ id: 'cakeMessage', label: 'Message on Cake', type: 'text', placeholder: 'Text to write on cake', required: true }] : []),
+    { id: 'specialNote',  label: 'Special Request / Note',  type: 'textarea',placeholder: 'Anything specific you\'d like us to know…', required: false },
+  ];
 
   const handleNext = () => {
     const newErrors: Record<string, boolean> = {};
