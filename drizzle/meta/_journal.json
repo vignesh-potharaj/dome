@@ -29,6 +29,13 @@
       "when": 1781376303666,
       "tag": "0003_square_sugar_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781445151351,
+      "tag": "0004_tough_secret_warriors",
+      "breakpoints": true
     }
   ]
 }

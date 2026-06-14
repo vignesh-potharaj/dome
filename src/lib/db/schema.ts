@@ -32,6 +32,8 @@ export const bookings = pgTable('bookings', {
   balloonColor: varchar('balloon_color', { length: 50 }),
   cakeOption: varchar('cake_option', { length: 100 }), // flavor/dietary option or 'none'
   sparklers: boolean('sparklers').default(false).notNull(),
+  ledName: varchar('led_name', { length: 100 }),
+  messageOnCake: varchar('message_on_cake', { length: 255 }),
   addOns: jsonb('add_ons').default([]).notNull(), // array of addon ids: ['photography', 'banner']
   celebrantName: varchar('celebrant_name', { length: 100 }),
   specialNote: varchar('special_note', { length: 500 }),
