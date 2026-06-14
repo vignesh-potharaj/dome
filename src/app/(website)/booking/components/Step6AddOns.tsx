@@ -171,8 +171,6 @@ export default function Step6AddOns({ selectedAddOns, ledName, totalPrice, onUpd
     onUpdate('addOns', newAddOns);
   };
 
-  const ledLettersCount = ledName ? ledName.replace(/[^a-zA-Z0-9]/g, '').length : 0;
-
   return (
     <div className="flex flex-col items-center justify-start min-h-[100vh] w-full pt-[100px] px-6 pb-[140px] overflow-y-auto">
       
@@ -223,27 +221,6 @@ export default function Step6AddOns({ selectedAddOns, ledName, totalPrice, onUpd
                 <p className="font-display font-normal text-[18px] text-[#C9973A] mt-2 mb-2">
                   {addon.id === 'led-name' ? '₹49 / letter' : `+₹${addon.price}`}
                 </p>
-
-                {addon.id === 'led-name' && isSelected && (
-                  <div 
-                    className="mt-3 w-full" 
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <label className="block text-[10px] uppercase tracking-wider text-[#B8A882] mb-1 font-sans">
-                      Enter LED Name:
-                    </label>
-                    <input
-                      type="text"
-                      value={ledName}
-                      onChange={(e) => onUpdate('ledName', e.target.value.toUpperCase())}
-                      placeholder="e.g. PRIYA"
-                      className="w-full bg-[rgba(8,6,4,0.7)] border border-[rgba(201,151,58,0.4)] rounded-[2px] p-2 text-[#F5EDD8] font-sans text-[12px] outline-none focus:border-[#C9973A]"
-                    />
-                    <p className="text-[10px] text-[#C9973A] mt-1.5 font-sans">
-                      {ledLettersCount} letters = +₹{ledLettersCount * 49}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           );

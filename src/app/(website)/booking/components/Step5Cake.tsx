@@ -66,6 +66,8 @@ interface Step5CakeProps {
   selectedCake: string | null;
   sparklers: boolean;
   eggless: boolean;
+  cakeMessage: string;
+  customer: any;
   selectedPackage: string | null;
   onUpdate: (key: string, value: any) => void;
   onNext: () => void;
@@ -75,12 +77,16 @@ export default function Step5Cake({
   selectedCake, 
   sparklers, 
   eggless, 
+  cakeMessage,
+  customer,
   selectedPackage, 
   onUpdate, 
   onNext 
 }: Step5CakeProps) {
   const isGrand = selectedPackage === 'grand';
   const hasCakeSelected = selectedCake && selectedCake !== 'none';
+  
+  const canContinue = selectedCake && (selectedCake === 'none' || cakeMessage.trim() !== '');
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[80px] px-6 pb-24">
@@ -116,6 +122,7 @@ export default function Step5Cake({
                 if (cake.id === 'none') {
                   onUpdate('eggless', false);
                   onUpdate('sparklers', false);
+                  onUpdate('customer', { ...customer, cakeMessage: '' });
                 }
               }}
               className="relative w-full p-6 rounded-[2px] cursor-pointer transition-all duration-300 flex flex-col justify-between"
@@ -160,52 +167,74 @@ export default function Step5Cake({
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row items-center gap-8 mt-12 bg-[rgba(201,151,58,0.03)] border border-[rgba(201,151,58,0.15)] px-8 py-4 rounded-[4px]"
+          className="flex flex-col gap-6 mt-12 bg-[rgba(201,151,58,0.03)] border border-[rgba(201,151,58,0.15)] px-8 py-6 rounded-[4px] w-full max-w-xl"
         >
-          {/* Eggless Toggle */}
-          <div className="flex items-center gap-4">
-            <span className="font-sans text-[13px] text-[#B8A882]">
-              Eggless Cake
-            </span>
-            <ToggleSwitch
-              value={eggless}
-              onChange={v => onUpdate('eggless', v)}
-            />
-            <span className="font-sans font-medium text-[12px] color-[#C9973A] text-[#C9973A]">
-              +₹250
-            </span>
+          {/* Eggless & Sparklers Toggles */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-4">
+              <span className="font-sans text-[13px] text-[#B8A882]">
+                Eggless Cake
+              </span>
+              <ToggleSwitch
+                value={eggless}
+                onChange={v => onUpdate('eggless', v)}
+              />
+              <span className="font-sans font-medium text-[12px] text-[#C9973A]">
+                +₹250
+              </span>
+            </div>
+
+            <div className="hidden sm:block w-[1px] h-6 bg-[rgba(201,151,58,0.2)]" />
+
+            <div className="flex items-center gap-4">
+              <span className="font-sans text-[13px] text-[#B8A882]">
+                Add Sparkler Candle
+              </span>
+              <ToggleSwitch
+                value={sparklers}
+                onChange={v => onUpdate('sparklers', v)}
+              />
+              <span className="font-sans font-medium text-[12px] text-[#C9973A]">
+                {isGrand ? '+₹0 (Included)' : '+₹149'}
+              </span>
+            </div>
           </div>
 
-          <div className="hidden sm:block w-[1px] h-6 bg-[rgba(201,151,58,0.2)]" />
+          <div className="w-full h-[1px] bg-[rgba(201,151,58,0.15)]" />
 
-          {/* Sparklers Toggle */}
-          <div className="flex items-center gap-4">
-            <span className="font-sans text-[13px] text-[#B8A882]">
-              Add Sparkler Candle
-            </span>
-            <ToggleSwitch
-              value={sparklers}
-              onChange={v => onUpdate('sparklers', v)}
+          {/* Cake Message Input */}
+          <div className="flex flex-col">
+            <label className="font-sans font-medium text-[11px] tracking-[0.2em] text-[#B8A882] uppercase mb-2">
+              Message on Cake *
+            </label>
+            <input
+              type="text"
+              value={cakeMessage}
+              onChange={e => onUpdate('customer', { ...customer, cakeMessage: e.target.value })}
+              placeholder="e.g. Happy Birthday Priya"
+              maxLength={50}
+              className="w-full bg-[rgba(8,6,4,0.7)] border border-[rgba(201,151,58,0.4)] rounded-[2px] p-3 text-[#F5EDD8] font-sans text-[13px] outline-none focus:border-[#C9973A]"
             />
-            <span className="font-sans font-medium text-[12px] text-[#C9973A]">
-              {isGrand ? '+₹0 (Included)' : '+₹149'}
-            </span>
           </div>
         </motion.div>
       )}
 
       {selectedCake && (
         <motion.button
+          disabled={!canContinue}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={onNext}
           style={{
             marginTop: '48px',
             padding: '14px 56px',
-            background: '#C9973A', color: '#080604',
+            background: canContinue ? '#C9973A' : 'rgba(201,151,58,0.2)',
+            color: canContinue ? '#080604' : 'rgba(201,151,58,0.4)',
+            cursor: canContinue ? 'pointer' : 'not-allowed',
             fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
             letterSpacing: '0.2em', textTransform: 'uppercase',
-            border: 'none', borderRadius: '2px', cursor: 'pointer',
+            border: 'none', borderRadius: '2px',
+            transition: 'all 0.3s ease',
           }}
           className="hover:bg-[#E8B96A] transition-colors"
         >

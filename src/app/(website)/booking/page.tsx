@@ -84,7 +84,7 @@ export default function BookingPage() {
       case 2: return <Step2DateSlot selectedDate={booking.date} selectedSlot={booking.slot} onUpdate={update} onNext={next} />;
       case 3: return <Step3Package selectedPackage={booking.package} onUpdate={update} onNext={next} />;
       case 4: return <Step4Balloon selectedColor={booking.balloonColor} onUpdate={update} onNext={next} />;
-      case 5: return <Step5Cake selectedCake={booking.cakeOption} sparklers={booking.sparklers} eggless={booking.eggless} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
+      case 5: return <Step5Cake selectedCake={booking.cakeOption} sparklers={booking.sparklers} eggless={booking.eggless} cakeMessage={booking.customer.cakeMessage} customer={booking.customer} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
       case 6: return <Step6AddOns selectedAddOns={booking.addOns} ledName={booking.ledName} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
       case 7: return <Step7Details booking={booking} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
       case 8: return <Step8Checkout booking={booking} totalPrice={totalPrice} onUpdate={update} />;
