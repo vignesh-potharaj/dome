@@ -33,8 +33,11 @@ export default function BookingSummary({ booking, total }: BookingSummaryProps) 
     const map: Record<string, string> = {
       'none': 'No Cake',
       'chocolate': 'Dark Chocolate',
-      'red-velvet': 'Red Velvet',
-      'custom': 'Custom Message Cake'
+      'black-forest': 'Black Forest',
+      'white-forest': 'White Forest',
+      'butterscotch': 'Butterscotch',
+      'red-velvet': 'Premium Red Velvet',
+      'chocolate-truffle': 'Premium Chocolate Truffle'
     };
     return id ? (map[id] || id) : 'Not selected';
   };
@@ -45,7 +48,7 @@ export default function BookingSummary({ booking, total }: BookingSummaryProps) 
     { label: 'Time', value: booking.slot || 'Not selected' },
     { label: 'Package', value: getPackageName(booking.package) },
     { label: 'Theme', value: getBalloonName(booking.balloonColor) },
-    { label: 'Cake', value: getCakeName(booking.cakeOption) + (booking.sparklers ? ' + Sparklers' : '') },
+    { label: 'Cake', value: getCakeName(booking.cakeOption) + (booking.eggless ? ' (Eggless)' : '') + (booking.sparklers ? ' + Sparkler' : '') },
     { label: 'Add-ons', value: `${booking.addOns.length} selected` },
   ];
 

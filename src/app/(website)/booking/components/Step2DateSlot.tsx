@@ -4,12 +4,13 @@ import { motion } from 'framer-motion';
 import CalendarPicker from './CalendarPicker';
 
 const allSlots = [
-  '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM',
-  '3:00 PM',  '4:00 PM',  '5:00 PM', '6:00 PM',
-  '7:00 PM',  '8:00 PM',  '9:00 PM', '10:00 PM',
+  '5:00 PM – 6:30 PM',
+  '7:00 PM – 8:30 PM',
+  '9:00 PM – 10:30 PM',
+  '11:00 PM – 12:30 AM',
 ];
 
-const blockedSlots = ['12:00 PM', '1:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'];
+const blockedSlots = ['7:00 PM – 8:30 PM'];
 
 interface Step2DateSlotProps {
   selectedDate: Date | null;
@@ -41,7 +42,7 @@ export default function Step2DateSlot({ selectedDate, selectedSlot, onUpdate, on
 
         {/* Right Panel: Time Slots */}
         <div className="w-full md:w-[60%] flex flex-col items-center md:items-start">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
             {allSlots.map((slot) => {
               const isBlocked = blockedSlots.includes(slot);
               const isSelected = selectedSlot === slot;
