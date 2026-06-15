@@ -43,6 +43,8 @@ export const bookings = pgTable('bookings', {
   advancePaid: integer('advance_paid').notNull(),
   razorpayOrderId: varchar('razorpay_order_id', { length: 100 }),
   razorpayPaymentId: varchar('razorpay_payment_id', { length: 100 }),
+  internalNotes: varchar('internal_notes', { length: 1000 }),
+  balancePaid: boolean('balance_paid').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -88,6 +90,16 @@ export const communicationLogs = pgTable('communication_logs', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Booking Logs Table (For Timestamped Modifications / History)
+export const bookingLogs = pgTable('booking_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  bookingId: varchar('booking_id', { length: 50 }).references(() => bookings.id, { onDelete: 'cascade' }).notNull(),
+  adminId: uuid('admin_id').references(() => admins.id), // Nullable if triggered by customer action
+  action: varchar('action', { length: 100 }).notNull(), // e.g. 'created', 'status_changed', 'rescheduled', 'cake_updated', etc.
+  details: jsonb('details').default({}).notNull(), // stores details of change: { oldDate: '2026-06-12', newDate: '2026-06-15' }
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Relationships
 export const branchesRelations = relations(branches, ({ many }) => ({
   bookings: many(bookings),
@@ -110,6 +122,7 @@ export const bookingsRelations = relations(bookings, ({ one, many }) => ({
     references: [customers.id],
   }),
   communicationLogs: many(communicationLogs),
+  logs: many(bookingLogs),
 }));
 
 export const adminsRelations = relations(admins, ({ one }) => ({
@@ -134,5 +147,16 @@ export const communicationLogsRelations = relations(communicationLogs, ({ one })
   booking: one(bookings, {
     fields: [communicationLogs.bookingId],
     references: [bookings.id],
+  }),
+}));
+
+export const bookingLogsRelations = relations(bookingLogs, ({ one }) => ({
+  booking: one(bookings, {
+    fields: [bookingLogs.bookingId],
+    references: [bookings.id],
+  }),
+  admin: one(admins, {
+    fields: [bookingLogs.adminId],
+    references: [admins.id],
   }),
 }));
