@@ -50,6 +50,13 @@
       "when": 1781545463396,
       "tag": "0006_majestic_mephisto",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781548249851,
+      "tag": "0007_mysterious_cyclops",
+      "breakpoints": true
     }
   ]
 }
