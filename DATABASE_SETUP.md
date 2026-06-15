@@ -1,125 +1,261 @@
-# Dome Cafe — PostgreSQL Database Setup & Connection Guide
+# Dome Cafe — Unified Database & Architecture Guide
+### A Junior Developer's Guide to PostgreSQL, Drizzle ORM, & Row-Level Security (RLS)
 
-This document explains the database architecture, connection methods, and environment configurations selected for the **Dome Cafe Digital Management System**. 
+Welcome to the database setup documentation for the Dome Cafe Digital Management System! This guide consolidates everything you need to know about our database structure, connection rules, security policies, and how to execute schema modifications.
 
 ---
 
-## 🎯 Architecture Summary
+## 🎯 Section 1: The Core Database Concepts
 
-We are using **PostgreSQL** as the core database engine. Because our application consists of two different runtime environments (Serverless Next.js and a Persistent Express backend), we must use **two different database connection methods** to ensure high performance and prevent connection exhaustion.
+Before diving into code, let's understand the tools we use and why we use them.
 
-```mermaid
-graph TD
-    subgraph Vercel [Vercel Serverless Hosting]
-        NextCustomer[Next.js Customer App]
-        NextAdmin[Next.js Admin Frontend]
-    end
+### 1. PostgreSQL (Postgres)
+We use **PostgreSQL** as our relational database engine. It acts as our single source of truth for customers, bookings, payments, and admin accounts.
+- **Relational**: Data is stored in tables with columns (types) and rows (records), and tables reference each other using **Foreign Keys** (e.g., a Booking has a `customer_id` referencing a Customer).
+- **Multi-Tenant**: We store data for both Kokapet and Sainikpuri branches in a **single unified database**, using security rules to separate them.
 
-    subgraph VMContainer [VM / Container Hosting]
-        ExpressAuth[Express.js Auth Service]
-    end
+### 2. Drizzle ORM (Object-Relational Mapping)
+Instead of writing raw SQL commands (like `SELECT * FROM bookings`), we use **Drizzle ORM** in our TypeScript code.
+- **Why?**: It gives us full type-safety. If you rename a column, TypeScript will show compiler errors everywhere that column is used in the app.
+- **Schema Definition**: Our tables are defined in TypeScript inside [schema.ts](file:///c:/projects/dome/src/lib/db/schema.ts).
+- **Migrations**: When we modify `schema.ts`, Drizzle Kit compares the TypeScript definitions with the database and automatically generates the `.sql` migration files.
 
-    subgraph CloudDB [Cloud PostgreSQL Database e.g., Supabase / Neon]
-        DirectConn[Direct Connection - Port 5432]
-        TxPooler[Transaction Pooler - Port 6543]
-    end
+---
 
-    NextCustomer -->|Queries| TxPooler
-    NextAdmin -->|Queries| TxPooler
-    ExpressAuth -->|Persistent Connection Pool| DirectConn
-    Migrations[Database Migrations / Seeds] -->|Schema Alterations| DirectConn
+## 🔌 Section 2: Database Connection Strategy
+
+We connect to PostgreSQL using **two different methods** depending on the environment. Postgres has connection limits, so we split our connections to prevent crashes.
+
+```
+                  ┌─────────────────────────────────────┐
+                  │      Vercel Serverless Hosting      │
+                  │  (Next.js App & Admin UI Frontend)  │
+                  └──────────────────┬──────────────────┘
+                                     │
+                             Queries (Port 6543)
+                                     ▼
+                  ┌─────────────────────────────────────┐
+                  │     Transaction Pooler (PgBouncer)  │
+                  └──────────────────┬──────────────────┘
+                                     │
+                                     ▼
+   ┌─────────────────────────────────┴─────────────────────────────────┐
+   │                  Supabase PostgreSQL Cloud Database                │
+   └─────────────────────────────────┬─────────────────────────────────┘
+                                     ▲
+                             Direct (Port 5432)
+                                     │
+                  ┌──────────────────┴──────────────────┐
+                  │       VM / Persistent Container     │
+                  │  (Express.js Auth Service & Seeds)  │
+                  └─────────────────────────────────────┘
 ```
 
----
+### 1. The Transaction Pooler (Port 6543)
+- **Used by**: The Next.js frontend apps (Customer website and Admin UI).
+- **Why**: Next.js runs in serverless functions that spin up and down instantly. If every serverless function established a direct socket connection, the database would quickly run out of available connection slots. The pooler sits in between, letting hundreds of serverless tasks share a few real database connections.
+- **Limitation**: Session-level SQL commands (like `SET timezone`) are **not allowed** through the pooler, because connections are shared dynamically.
 
-## 🔌 Connection Methods: Why & Where
-
-PostgreSQL handles connections by spawning a heavy operating system process for each client. Cloud databases have strict limits on these processes (e.g., a maximum of 100 concurrent connections). To handle this limit, we split our connections as follows:
-
-### 1. Transaction Pooler (Port 6543)
-* **Used By:** 
-  * Next.js Customer Frontend (`/`)
-  * Next.js Admin Frontend (`/admin-portal/apps/frontend`)
-* **How it Works:** The pooler sits between the Next.js app and the database. It only allocates a real database connection when a query is running. The moment a transaction completes, the connection is instantly returned to the pool to be shared by another request.
-* **Why:** In a serverless hosting environment like Vercel, your backend code scales horizontally by spinning up hundreds of temporary, short-lived instances in response to traffic. If each instance opened a direct connection, the database limit would be reached instantly, leading to website crashes.
-
-### 2. Direct Connection (Port 5432)
-* **Used By:** 
-  * Express.js Auth Service (`/admin-portal/apps/auth-service`)
-  * Database Schema Migrations (e.g. Prisma Migrate, Drizzle Kit)
-* **How it Works:** The application establishes a permanent, 1-to-1 socket connection directly to PostgreSQL and keeps it open.
-* **Why:** 
-  * **For Auth Service:** The Express server is a long-lived process. It starts once and runs 24/7. It can safely manage its own small connection pool (e.g., 5-10 connections) that it reuses for every authentication request. This avoids the extra network hop of a pooler and supports fast response times.
-  * **For Migrations:** Running migrations requires exclusive locks and session-level commands (`SET`, `ALTER`) that transaction poolers do not support.
+### 2. The Direct Connection (Port 5432)
+- **Used by**: The Express `auth-service` and database migration commands (like Drizzle Kit).
+- **Why**: The Express server is a long-running program that starts once and stays alive 24/7. It can safely manage its own small pool (e.g., 5-10 persistent connections). Drizzle migrations also need direct connections to lock tables during schema updates.
 
 ---
 
-## ⚙️ Environment Configuration
+## 🔒 Section 3: Row-Level Security (RLS) & Multi-Tenancy
 
-You will need to set up three separate `.env` files in your workspace. 
+Our system is multi-tenant: branch admins from Kokapet and Sainikpuri share the same database tables. To ensure Kokapet admins **never** see Sainikpuri bookings, we use PostgreSQL **Row-Level Security (RLS)**.
 
-### 1. Customer Frontend App
-Create or edit [`.env.local`](file:///c:/projects/dome/.env.local) in the root directory:
+### How RLS Works:
+RLS blocks queries at the database engine level. If RLS is enabled, you cannot query rows unless you meet the policy requirements.
+We use **Session-Variable RLS** (Option B), which allows us to keep our database portable across any cloud host.
 
-```bash
-# PostgreSQL Connection - Transaction Pooler (Port 6543)
-DATABASE_URL="postgresql://postgres.gjynx5au:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+1. The Express backend validates a user's JWT.
+2. Inside a database transaction block, the backend sets a temporary parameter:
+   ```sql
+   SET LOCAL app.current_branch_id = 'kokapet';
+   ```
+3. When you run a query (e.g., `SELECT * FROM bookings`), Postgres automatically inserts a filter:
+   ```sql
+   -- Postgres executes this under the hood:
+   SELECT * FROM bookings WHERE branch_id = 'kokapet';
+   ```
+4. The moment the transaction commits or rolls back, the session parameter is cleared.
 
-# Note: If using Prisma, you also configure the direct URL for migrations:
-DIRECT_URL="postgresql://postgres.gjynx5au:[YOUR-PASSWORD]@db.gjynx5au.supabase.co:5432/postgres"
+### Super-Admin Bypass:
+Super Admins need to see everything. If the backend sets `app.current_role = 'super_admin'`, the database ignores branch filters and returns all records.
+
+### Configured Table Security Policies:
+
+| Table | RLS Status | Restriction / Filtering Rule |
+|---|---|---|
+| **`bookings`** | Enforced | Must match `branch_id` OR run as `super_admin`. |
+| **`blocked_dates`** | Enforced | Must match `branch_id` OR run as `super_admin`. |
+| **`admins`** | Enforced | Admins can only see other admin accounts assigned to their own branch. |
+| **`booking_logs`** | Enforced | Scoped through the associated booking: can only view logs if the booking belongs to their branch. |
+| **`customers`** | Enforced | Scoped through bookings: can only view customer info if that customer has made a booking at their branch. |
+| **`communication_logs`**| Enforced | Scoped through the associated booking: can only view message logs if the booking belongs to their branch. |
+
+---
+
+## 📐 Section 4: Database Schema Reference
+
+The tables and their purposes are outlined below:
+
+### 1. `branches`
+Stores cafe locations (e.g., `'kokapet'`, `'sainikpuri'`).
+- `id` (Primary Key, varchar) - e.g. `'kokapet'`
+- `name` (varchar) - e.g. `'Kokapet Branch'`
+- `status` (varchar) - `'active'` or `'disabled'`
+- `capacity` (integer) - maximum slots
+- `createdAt` (timestamp)
+
+### 2. `admins`
+Stores portal users and password hashes.
+- `id` (Primary Key, uuid)
+- `email` (varchar) - email address (used for login)
+- `passwordHash` (varchar) - bcrypt hash of password
+- `role` (varchar) - `'super_admin'` or `'branch_admin'`
+- `branchId` (varchar, Nullable) - references `branches.id`
+
+### 3. `customers`
+Stores customer profile records.
+- `id` (Primary Key, uuid)
+- `name` (varchar)
+- `phone` (varchar) - unique WhatsApp number
+- `email` (varchar, Nullable)
+- `occasions` (jsonb) - e.g. `{ "birthday": "1995-06-15", "anniversary": "2020-11-20" }`
+- `marketingConsent` (boolean) - DPDP Act consent flag
+
+### 4. `bookings`
+Core booking transactions.
+- `id` (Primary Key, varchar) - booking ID (e.g., `'DC-K1J3H4'`)
+- `branchId` (varchar) - references `branches.id`
+- `customerId` (uuid) - references `customers.id`
+- `date` (date)
+- `slot` (varchar) - slot time (e.g., `'5:00 PM – 6:30 PM'`)
+- `packageName` (varchar)
+- `balloonColor` (varchar, Nullable)
+- `cakeOption` (varchar, Nullable)
+- `sparklers` (boolean)
+- `ledName` (varchar, Nullable)
+- `messageOnCake` (varchar, Nullable)
+- `addOns` (jsonb) - array of addon IDs
+- `celebrantName` (varchar, Nullable)
+- `specialNote` (varchar, Nullable)
+- `guestCount` (integer)
+- `status` (varchar) - `'pending_payment'`, `'confirmed'`, `'cancelled'`, `'rescheduled'`
+- `totalPrice` (integer) - total price in rupees
+- `advancePaid` (integer) - 50% advance paid online
+- `balancePaid` (boolean) - whether remaining balance was paid at the cafe
+- `internalNotes` (varchar, Nullable) - admin-only notations
+- `razorpayOrderId` / `razorpayPaymentId` (varchar)
+- `createdAt` (timestamp)
+
+### 5. `booking_logs`
+Timestamped modification history (audit trail) for bookings.
+- `id` (Primary Key, uuid)
+- `bookingId` (varchar) - references `bookings.id`
+- `adminId` (uuid, Nullable) - references `admins.id` (null if customer action)
+- `action` (varchar) - e.g., `'created'`, `'status_changed'`, `'rescheduled'`
+- `details` (jsonb) - e.g. `{ "oldDate": "2026-06-15", "newDate": "2026-06-18" }`
+- `createdAt` (timestamp)
+
+### 6. `blocked_dates`
+Private closures or maintenance blocks.
+- `id` (Primary Key, uuid)
+- `branchId` (varchar) - references `branches.id`
+- `date` (date)
+- `reason` (varchar) - e.g., `'Maintenance'`
+- `createdAt` (timestamp)
+
+### 7. `otp_sessions`
+Ephemeral validation tokens.
+- `id` (Primary Key, uuid)
+- `phone` (varchar)
+- `code` (varchar) - 6-digit OTP code
+- `expiresAt` (timestamp)
+- `verified` (boolean)
+- `createdAt` (timestamp)
+
+### 8. `communication_logs`
+Delivery logs for WhatsApp/SMS.
+- `id` (Primary Key, uuid)
+- `customerId` (uuid) - references `customers.id`
+- `bookingId` (varchar, Nullable) - references `bookings.id`
+- `type` (varchar) - `'otp'`, `'booking_confirmation'`, etc.
+- `channel` (varchar) - `'whatsapp'` or `'sms'`
+- `recipient` (varchar)
+- `status` (varchar) - `'sent'`, `'delivered'`, `'read'`, `'failed'`
+- `errorMessage` (varchar, Nullable)
+- `createdAt` (timestamp)
+
+---
+
+## 🛠️ Section 5: Junior Developer Cheat Sheet (How-To Guide)
+
+Here are the step-by-step instructions for performing everyday database tasks.
+
+### 1. How to Modify the Database Schema
+
+If you need to add a column, update a field, or create a table:
+
+1. **Edit the Schema**: Open [schema.ts](file:///c:/projects/dome/src/lib/db/schema.ts) and make your updates using Drizzle's helpers.
+2. **Generate the SQL Migration**:
+   Run the generate command in the root folder:
+   ```powershell
+   npx drizzle-kit generate
+   ```
+   This generates a new `.sql` file in the `drizzle/` directory.
+3. **Write Custom SQL (If needed)**:
+   If your change involves RLS policies, write the RLS SQL commands in a new custom migration file (e.g., `drizzle/xxxx_custom_rls.sql`).
+4. **Apply Migrations to the Database**:
+   Run this in the root folder (loads credentials from `.env.local`):
+   ```powershell
+   node --env-file=.env.local node_modules/drizzle-kit/bin.cjs migrate
+   ```
+
+### 2. How to Run Database Seeding
+To populate default branch configurations and default admin credentials in your environment:
+```powershell
+npx tsx --env-file=.env.local src/lib/db/seed-admins.ts
 ```
 
-### 2. Admin Frontend App
-Create or edit [`.env`](file:///c:/projects/dome/admin-portal/apps/frontend/.env):
+### 3. How to Write a Database Query with RLS in the Backend
+Whenever you query data on behalf of a branch admin, you **must** execute your queries inside a transaction block to enable RLS checks.
 
-```bash
-# PostgreSQL Connection - Transaction Pooler (Port 6543)
-DATABASE_URL="postgresql://postgres.gjynx5au:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.gjynx5au:[YOUR-PASSWORD]@db.gjynx5au.supabase.co:5432/postgres"
+Here is an example in Express/Drizzle:
+```typescript
+import { db } from './db'; // Your drizzle client
+import { bookings } from './schema';
+import { sql } from 'drizzle-orm';
+
+export async function getBookingsForAdmin(branchId: string) {
+  // Wrap queries inside a database transaction block
+  return await db.transaction(async (tx) => {
+    // 1. Set session parameter (clears automatically after commit)
+    await tx.execute(
+      sql`SET LOCAL app.current_branch_id = ${branchId}`
+    );
+
+    // 2. Query bookings as usual.
+    // PostgreSQL will automatically intercept and filter the results!
+    const results = await tx.select().from(bookings);
+    return results;
+  });
+}
 ```
 
-### 3. Auth Service App
-Create or edit [`.env`](file:///c:/projects/dome/admin-portal/apps/auth-service/.env):
+If querying as a Super Admin:
+```typescript
+export async function getAllBookingsGlobal() {
+  return await db.transaction(async (tx) => {
+    // Set current_role parameter to super_admin to bypass RLS filters
+    await tx.execute(
+      sql`SET LOCAL app.current_role = 'super_admin'`
+    );
 
-```bash
-PORT=5000
-
-# PostgreSQL Connection - Direct Connection (Port 5432)
-DATABASE_URL="postgresql://postgres.gjynx5au:[YOUR-PASSWORD]@db.gjynx5au.supabase.co:5432/postgres"
+    return await tx.select().from(bookings);
+  });
+}
 ```
-
----
-
-## 🛠️ Step-by-Step Database Provisioning
-
-To set up the database using a cloud provider like **Supabase** (recommended):
-
-1. **Create a Project:**
-   * Go to [Supabase](https://supabase.com) and create a new project named `dome-cafe`.
-   * Save the database password securely.
-
-2. **Retrieve Connection Strings:**
-   * Go to **Project Settings** > **Database** in the Supabase Dashboard.
-   * Scroll down to the **Connection string** section.
-   * Under the **URI** tab, toggle between:
-     * **Transaction Mode:** Copy this URI for `DATABASE_URL` in your Next.js apps (uses port `6543` and `?pgbouncer=true` or similar pooler configurations).
-     * **Session/Direct Mode:** Copy this URI for `DATABASE_URL` in your Express Auth Service, and as `DIRECT_URL` in Next.js (uses port `5432`).
-
-3. **Verify Local Connections:**
-   * Double check that your local environment can resolve the database hosts.
-   * Note that some network environments block port `5432` or `6543`. If your local setup cannot connect, verify your local firewall or network restrictions.
-
----
-
-## ⚠️ Important Best Practices
-
-> [!WARNING]
-> **Never commit your `.env` files to git.** Make sure they are listed in the corresponding `.gitignore` files of each application.
-
-> [!IMPORTANT]
-> **Transaction Pooling Restrictions:**
-> When querying through the Transaction Pooler (Next.js apps), do not use raw PostgreSQL session commands like `SET timezone = 'UTC'` or `LISTEN/NOTIFY` channels. Since the pooler switches your physical connection behind the scenes, these session settings will bleed into other users' transactions or fail completely.
-
-> [!TIP]
-> **Express.js Connection Pool Limit:**
-> In your Express Auth Service, always limit the pool size in your database driver options (e.g. `max: 10`) to ensure it doesn't hog connections that other services or frontend API routes need.
