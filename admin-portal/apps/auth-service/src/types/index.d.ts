@@ -1,4 +1,14 @@
-interface User {
+import { Request } from 'express';
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+    }
+  }
+}
+
+export interface User {
     id: string;
     username: string;
     password: string;
@@ -7,17 +17,17 @@ interface User {
     updatedAt: Date;
 }
 
-interface AuthResponse {
+export interface AuthResponse {
     token: string;
     user: User;
 }
 
-interface LoginRequest {
+export interface LoginRequest {
     username: string;
     password: string;
 }
 
-interface RegisterRequest {
+export interface RegisterRequest {
     username: string;
     password: string;
     email: string;

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { db } from '../db';
-import { admins } from '../../../../src/lib/db/schema';
+import { admins } from '../schema';
 import { eq } from 'drizzle-orm';
 
 export class UserService {
