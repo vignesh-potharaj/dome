@@ -66,10 +66,20 @@ export const admins = pgTable('admins', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Blocked Dates Table (For Private Events & Closures)
+export const blockedDates = pgTable('blocked_dates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  branchId: varchar('branch_id', { length: 50 }).references(() => branches.id).notNull(),
+  date: date('date').notNull(),
+  reason: varchar('reason', { length: 255 }), // e.g. 'Private Event', 'Maintenance'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Relationships
 export const branchesRelations = relations(branches, ({ many }) => ({
   bookings: many(bookings),
   admins: many(admins),
+  blockedDates: many(blockedDates),
 }));
 
 export const customersRelations = relations(customers, ({ many }) => ({
@@ -90,6 +100,13 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
 export const adminsRelations = relations(admins, ({ one }) => ({
   branch: one(branches, {
     fields: [admins.branchId],
+    references: [branches.id],
+  }),
+}));
+
+export const blockedDatesRelations = relations(blockedDates, ({ one }) => ({
+  branch: one(branches, {
+    fields: [blockedDates.branchId],
     references: [branches.id],
   }),
 }));
