@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import ProgressBar from './components/ProgressBar';
@@ -39,22 +39,36 @@ export default function BookingPage() {
     agreedToTerms: false,
   });
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const pkg = params.get('package');
+      if (pkg && ['party', 'vibe', 'magic', 'elite', 'luxury'].includes(pkg)) {
+        setBooking(b => ({ ...b, package: pkg }));
+      }
+    }
+  }, []);
+
   const next = () => setStep(s => Math.min(s + 1, 8));
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const back = () => setStep(s => Math.max(s - 1, 1));
   const update = (key: string, value: any) => setBooking(b => ({ ...b, [key]: value }));
 
   const calculateTotal = (b: typeof booking) => {
-    const packagePrice = { classic: 999, premium: 1499, grand: 2199 }[b.package || ''] || 0;
+    const packagePrice = {
+      party: 3999,
+      vibe: 5999,
+      magic: 8999,
+      elite: 14999,
+      luxury: 19999
+    }[b.package || ''] || 0;
     
-    // Cake pricing logic based on package
+    // Cake pricing logic: Cake is complimentary (0 base price) for all new packages
     let cakePrice = 0;
-    const isGrand = b.package === 'grand';
     const hasCake = b.cakeOption && b.cakeOption !== 'none';
     
     if (hasCake) {
-      // Base price is free for grand, 349 for others
-      const baseCakePrice = isGrand ? 0 : 349;
+      const baseCakePrice = 0; // Free for all packages
       // Premium flavours surcharge (+250)
       const premiumSurcharge = (b.cakeOption === 'red-velvet' || b.cakeOption === 'chocolate-truffle') ? 250 : 0;
       // Eggless surcharge (+250)
@@ -63,8 +77,9 @@ export default function BookingPage() {
       cakePrice = baseCakePrice + premiumSurcharge + egglessSurcharge;
     }
     
-    // Sparklers pricing (free for grand, 149 for others)
-    const sparklerPrice = b.sparklers ? (isGrand ? 0 : 149) : 0;
+    // Sparklers pricing: Included in Vibe, Magic, Elite, Luxury. +149 for Party.
+    const isSparklerFree = ['vibe', 'magic', 'elite', 'luxury'].includes(b.package || '');
+    const sparklerPrice = b.sparklers ? (isSparklerFree ? 0 : 149) : 0;
 
     const addOnsTotal = b.addOns.reduce((sum, id) => {
       if (id === 'led-name') {

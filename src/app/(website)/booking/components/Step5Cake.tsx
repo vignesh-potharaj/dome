@@ -83,10 +83,14 @@ export default function Step5Cake({
   onUpdate, 
   onNext 
 }: Step5CakeProps) {
-  const isGrand = selectedPackage === 'grand';
+  const isCakeIncluded = true; // All new packages include cake
+  const isSparklerFree = selectedPackage ? ['vibe', 'magic', 'elite', 'luxury'].includes(selectedPackage) : false;
   const hasCakeSelected = selectedCake && selectedCake !== 'none';
   
   const canContinue = selectedCake && (selectedCake === 'none' || cakeMessage.trim() !== '');
+
+  // Get package specific cake size for the message
+  const cakeSizeText = selectedPackage && ['elite', 'luxury'].includes(selectedPackage) ? '1 Kg' : '500g';
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[80px] px-6 pb-24">
@@ -95,10 +99,7 @@ export default function Step5Cake({
         CELEBRATION CAKE
       </h2>
       <p className="font-sans font-light text-[14px] text-[#B8A882] text-center mb-12 max-w-xl">
-        {isGrand 
-          ? "Your Grand Package includes a complimentary celebration cake! Select your preferred flavour below (Premium upgrades available)."
-          : "Add a delicious cake to complete your experience. Choose from our standard or premium flavours."
-        }
+        Your package includes a complimentary {cakeSizeText} celebration cake! Select your preferred flavour below (Premium upgrades available).
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full max-w-6xl">
@@ -108,9 +109,9 @@ export default function Step5Cake({
           let pricingText = '';
           if (cake.id !== 'none') {
             if (cake.isPremium) {
-              pricingText = isGrand ? '+₹250' : '+₹599';
+              pricingText = '+₹250';
             } else {
-              pricingText = isGrand ? 'Included' : '+₹349';
+              pricingText = 'Included';
             }
           }
 
@@ -195,7 +196,7 @@ export default function Step5Cake({
                 onChange={v => onUpdate('sparklers', v)}
               />
               <span className="font-sans font-medium text-[12px] text-[#C9973A]">
-                {isGrand ? '+₹0 (Included)' : '+₹149'}
+                {isSparklerFree ? '+₹0 (Included)' : '+₹149'}
               </span>
             </div>
           </div>
