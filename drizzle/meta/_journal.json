@@ -43,6 +43,13 @@
       "when": 1781545027670,
       "tag": "0005_salty_mister_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781545463396,
+      "tag": "0006_majestic_mephisto",
+      "breakpoints": true
     }
   ]
 }

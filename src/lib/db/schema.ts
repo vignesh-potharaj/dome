@@ -75,6 +75,19 @@ export const blockedDates = pgTable('blocked_dates', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// Communication Logs Table (For WhatsApp & SMS Tracking)
+export const communicationLogs = pgTable('communication_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  customerId: uuid('customer_id').references(() => customers.id),
+  bookingId: varchar('booking_id', { length: 50 }).references(() => bookings.id),
+  type: varchar('type', { length: 50 }).notNull(), // 'otp', 'booking_confirmation', 'crm_anniversary', 'crm_birthday'
+  channel: varchar('channel', { length: 20 }).notNull(), // 'whatsapp', 'sms'
+  recipient: varchar('recipient', { length: 20 }).notNull(), // phone number
+  status: varchar('status', { length: 20 }).default('sent').notNull(), // 'sent', 'delivered', 'read', 'failed'
+  errorMessage: varchar('error_message', { length: 500 }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 // Relationships
 export const branchesRelations = relations(branches, ({ many }) => ({
   bookings: many(bookings),
@@ -84,9 +97,10 @@ export const branchesRelations = relations(branches, ({ many }) => ({
 
 export const customersRelations = relations(customers, ({ many }) => ({
   bookings: many(bookings),
+  communicationLogs: many(communicationLogs),
 }));
 
-export const bookingsRelations = relations(bookings, ({ one }) => ({
+export const bookingsRelations = relations(bookings, ({ one, many }) => ({
   branch: one(branches, {
     fields: [bookings.branchId],
     references: [branches.id],
@@ -95,6 +109,7 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
     fields: [bookings.customerId],
     references: [customers.id],
   }),
+  communicationLogs: many(communicationLogs),
 }));
 
 export const adminsRelations = relations(admins, ({ one }) => ({
@@ -108,5 +123,16 @@ export const blockedDatesRelations = relations(blockedDates, ({ one }) => ({
   branch: one(branches, {
     fields: [blockedDates.branchId],
     references: [branches.id],
+  }),
+}));
+
+export const communicationLogsRelations = relations(communicationLogs, ({ one }) => ({
+  customer: one(customers, {
+    fields: [communicationLogs.customerId],
+    references: [customers.id],
+  }),
+  booking: one(bookings, {
+    fields: [communicationLogs.bookingId],
+    references: [bookings.id],
   }),
 }));
