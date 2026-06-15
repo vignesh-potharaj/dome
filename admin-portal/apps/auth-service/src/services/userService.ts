@@ -1,31 +1,46 @@
-import { User } from '../types';
-import { Database } from '../database'; // Assuming you have a database module for data access
+import bcrypt from 'bcryptjs';
+import { db } from '../db';
+import { admins } from '../../../../src/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 export class UserService {
-    private db: Database;
+    async authenticate(email: string, password: string) {
+        // Query admin by email
+        const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
+        if (result.length === 0) {
+            return null;
+        }
 
-    constructor() {
-        this.db = new Database(); // Initialize your database connection
+        const admin = result[0];
+        
+        // Compare bcrypt password hash
+        const isValid = await bcrypt.compare(password, admin.passwordHash);
+        if (!isValid) {
+            return null;
+        }
+
+        // Return sanitized admin details
+        return {
+            id: admin.id,
+            email: admin.email,
+            role: admin.role,
+            branchId: admin.branchId,
+            createdAt: admin.createdAt,
+        };
     }
 
-    async createUser(username: string, password: string): Promise<User> {
-        // Logic to create a new user
-        const newUser = { username, password }; // Hash the password in a real application
-        return await this.db.saveUser(newUser);
+    async getAdminByEmail(email: string) {
+        const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
+        return result[0] || null;
     }
 
-    async getUserByUsername(username: string): Promise<User | null> {
-        // Logic to retrieve a user by username
-        return await this.db.findUserByUsername(username);
-    }
-
-    async updateUser(username: string, updates: Partial<User>): Promise<User | null> {
-        // Logic to update user information
-        return await this.db.updateUser(username, updates);
-    }
-
-    async deleteUser(username: string): Promise<boolean> {
-        // Logic to delete a user
-        return await this.db.deleteUser(username);
+    async createAdmin(email: string, passwordHash: string, role: string, branchId: string | null) {
+        const result = await db.insert(admins).values({
+            email,
+            passwordHash,
+            role,
+            branchId,
+        }).returning();
+        return result[0];
     }
 }
