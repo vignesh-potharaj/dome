@@ -120,7 +120,14 @@ The original simple toggle has been replaced with a **Branch Disable** mechanism
 - Calendar and appointment manager stay fully functional.
 - Admin can still message individual customers manually.
 
-> ℹ️ **Operational Note:** In case of emergency closures, administrators can manually contact affected customers using the calendar and appointment manager quick-message actions.
+#### ⚠️ Hard Disable (Emergency Closures / Unscheduled Downtime)
+In the event of an emergency closure or unscheduled downtime where a branch must be completely shut down:
+- All new bookings are blocked.
+- Upcoming bookings for the closure period are suspended.
+- **Strict No-Refund Policy:** In accordance with the cafe's strict policy, **no payment refunds or reversals (via Razorpay or otherwise) are issued** under any circumstances, including emergency shutdowns.
+- **Resolution:** Affected customers must be contacted manually or via automated rescheduling messages to select a future booking date. Rescheduling or issuing alternative store vouchers is the exclusive path for resolving affected bookings.
+
+> ℹ️ **Operational Note:** In case of emergency closures, administrators can manually contact affected customers using the calendar and appointment manager quick-message actions to coordinate rescheduling.
 
 ### 2.3 Calendar View
 

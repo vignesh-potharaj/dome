@@ -110,9 +110,10 @@ Required customer information:
 ## Advance Payment
 - 50% advance payment mandatory at booking confirmation.
 
-## Cancellation Policy
-- No cancellations.
-- No refunds after booking confirmation.
+## Cancellation & Refund Policy
+- **Strict No-Refunds:** No cancellations are permitted, and no payment refunds or reversals (via Razorpay or any other method) are issued after booking confirmation under any circumstances.
+- **Emergency Closures / Force Majeure:** In the event that a branch must close due to an emergency, planned maintenance, unscheduled downtime, staff shortage, or any force majeure events, **no refunds will be issued**. 
+- **Resolution for Closures:** In case of emergency branch closures, the cafe will contact affected customers to reschedule their booking to a future date or provide store vouchers of equivalent value.
 
 ## Rescheduling Policy
 - Customer must inform 2–3 days in advance.
