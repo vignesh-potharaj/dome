@@ -1,21 +1,21 @@
 # Dome Cafe — Unified Database & Architecture Guide
-### A Junior Developer's Guide to PostgreSQL, Drizzle ORM, & Row-Level Security (RLS)
+### A Junior Developer's Guide to PostgreSQL, Drizzle ORM, Row-Level Security (RLS), & CRM Campaigns
 
-Welcome to the database setup documentation for the Dome Cafe Digital Management System! This guide consolidates everything you need to know about our database structure, connection rules, security policies, and how to execute schema modifications.
+Welcome to the unified database setup documentation for the Dome Cafe Digital Management System! This guide consolidates everything you need to know about our database structure, connection strategy, security models, CRM aggregation queries, and automated daily campaign scheduling.
 
 ---
 
 ## 🎯 Section 1: The Core Database Concepts
 
-Before diving into code, let's understand the tools we use and why we use them.
+Before diving into code, let's understand the database stack and why we selected these tools.
 
 ### 1. PostgreSQL (Postgres)
 We use **PostgreSQL** as our relational database engine. It acts as our single source of truth for customers, bookings, payments, and admin accounts.
-- **Relational**: Data is stored in tables with columns (types) and rows (records), and tables reference each other using **Foreign Keys** (e.g., a Booking has a `customer_id` referencing a Customer).
+- **Relational**: Data is stored in structured tables with columns (data types) and rows (records). Tables reference each other using **Foreign Keys** (e.g., a Booking has a `customer_id` referencing a Customer).
 - **Multi-Tenant**: We store data for both Kokapet and Sainikpuri branches in a **single unified database**, using security rules to separate them.
 
 ### 2. Drizzle ORM (Object-Relational Mapping)
-Instead of writing raw SQL commands (like `SELECT * FROM bookings`), we use **Drizzle ORM** in our TypeScript code.
+Instead of writing raw SQL strings (like `SELECT * FROM bookings`), we use **Drizzle ORM** in our TypeScript code.
 - **Why?**: It gives us full type-safety. If you rename a column, TypeScript will show compiler errors everywhere that column is used in the app.
 - **Schema Definition**: Our tables are defined in TypeScript inside [schema.ts](file:///c:/projects/dome/src/lib/db/schema.ts).
 - **Migrations**: When we modify `schema.ts`, Drizzle Kit compares the TypeScript definitions with the database and automatically generates the `.sql` migration files.
@@ -24,7 +24,7 @@ Instead of writing raw SQL commands (like `SELECT * FROM bookings`), we use **Dr
 
 ## 🔌 Section 2: Database Connection Strategy
 
-We connect to PostgreSQL using **two different methods** depending on the environment. Postgres has connection limits, so we split our connections to prevent crashes.
+We connect to PostgreSQL using **two different methods** depending on the runtime environment. Postgres has connection limits, so we split our connection routes to prevent crashes.
 
 ```
                   ┌─────────────────────────────────────┐
@@ -52,7 +52,7 @@ We connect to PostgreSQL using **two different methods** depending on the enviro
 ```
 
 ### 1. The Transaction Pooler (Port 6543)
-- **Used by**: The Next.js frontend apps (Customer website and Admin UI).
+- **Used by**: The Next.js apps (Customer website, Admin UI APIs, and Cron endpoints).
 - **Why**: Next.js runs in serverless functions that spin up and down instantly. If every serverless function established a direct socket connection, the database would quickly run out of available connection slots. The pooler sits in between, letting hundreds of serverless tasks share a few real database connections.
 - **Limitation**: Session-level SQL commands (like `SET timezone`) are **not allowed** through the pooler, because connections are shared dynamically.
 
@@ -68,7 +68,7 @@ Our system is multi-tenant: branch admins from Kokapet and Sainikpuri share the 
 
 ### How RLS Works:
 RLS blocks queries at the database engine level. If RLS is enabled, you cannot query rows unless you meet the policy requirements.
-We use **Session-Variable RLS** (Option B), which allows us to keep our database portable across any cloud host.
+We use **Session-Variable RLS**, which allows us to keep our database portable across any cloud host.
 
 1. The Express backend validates a user's JWT.
 2. Inside a database transaction block, the backend sets a temporary parameter:
@@ -183,16 +183,40 @@ Delivery logs for WhatsApp/SMS.
 - `id` (Primary Key, uuid)
 - `customerId` (uuid) - references `customers.id`
 - `bookingId` (varchar, Nullable) - references `bookings.id`
-- `type` (varchar) - `'otp'`, `'booking_confirmation'`, etc.
+- `type` (varchar) - `'otp'`, `'booking_confirmation'`, `'crm_birthday'`, `'crm_anniversary'`, etc.
 - `channel` (varchar) - `'whatsapp'` or `'sms'`
 - `recipient` (varchar)
-- `status` (varchar) - `'sent'`, `'delivered'`, `'read'`, `'failed'`
-- `errorMessage` (varchar, Nullable)
+- `status` (varchar) - `'sent'`, `'delivered'`, `'failed'`
 - `createdAt` (timestamp)
 
 ---
 
-## 🛠️ Section 5: Junior Developer Cheat Sheet (How-To Guide)
+## 📈 Section 5: CRM Customer Analytics & Automated Campaigns
+
+To build customer loyalty, we have built a CRM analytics database query layer and campaign dispatch system.
+
+### 1. Advanced Metrics Aggregation
+Rather than querying tables and doing calculations in JavaScript, we use a single query that joins `customers` with their corresponding `bookings`:
+- **`bookingsCount`**: Uses SQL `count(bookings.id)` to count total visits.
+- **`totalSpend`**: Evaluates cumulative revenue by conditionally summing `totalPrice` only for `'confirmed'` and `'rescheduled'` statuses.
+- **`lastVisitedBranch`**: A SQL subquery fetches the most recent branch ID where the customer had a confirmed booking.
+All of this complies with RLS: branch admins only see aggregations based on bookings made at their own assigned branch!
+
+### 2. Digital Personal Data Protection (DPDP) Act Compliance
+Compliance with the Indian DPDP Act 2023 is mandatory:
+- Promotional messages may **only** be sent to customers who explicitly opted in (`marketing_consent = true`).
+- **Frontend Filter**: The bulk campaign page displays warning cards showing exactly how many selected users will be excluded.
+- **Backend Filter**: The database query strictly appends `eq(customers.marketingConsent, true)` inside the transactional SQL check. Even if a forged REST payload tries to submit opted-out IDs, the backend will discard them.
+
+### 3. Automated Occasion Cron Math
+We run an automated daily cron job at 9:00 AM (configured via Vercel Crons in `vercel.json` scheduling the `/api/cron/crm-reminders` route).
+- **Date Matching**: Birthdays/anniversaries contain static birth/marriage years (e.g. 1995-06-15). To identify upcoming occasions, the script calculates the target date (today + 7 days) and formats its Month-Day (e.g. `"06-22"`).
+- It queries opted-in customer occasion records, extracts their Month-Day substring (`dateStr.substring(5, 10)`), and matches them in TypeScript. This avoids complex, database-specific SQL date operations, ensuring the code remains database-agnostic.
+- **RLS Bypass**: Because a cron job is a background system task (not triggered by an authenticated branch admin session), it needs to scan all branches globally. We execute `SET LOCAL app.current_role = 'super_admin'` within the transaction block so the query bypasses tenant barriers.
+
+---
+
+## 🛠️ Section 6: Junior Developer Cheat Sheet (How-To Guide)
 
 Here are the step-by-step instructions for performing everyday database tasks.
 
@@ -224,38 +248,75 @@ npx tsx --env-file=.env.local src/lib/db/seed-admins.ts
 ### 3. How to Write a Database Query with RLS in the Backend
 Whenever you query data on behalf of a branch admin, you **must** execute your queries inside a transaction block to enable RLS checks.
 
-Here is an example in Express/Drizzle:
+Here is an example in Next.js App Router (Drizzle):
 ```typescript
-import { db } from './db'; // Your drizzle client
+import { db } from './db';
 import { bookings } from './schema';
-import { sql } from 'drizzle-orm';
+import { sql, eq } from 'drizzle-orm';
 
-export async function getBookingsForAdmin(branchId: string) {
-  // Wrap queries inside a database transaction block
+export async function getBookingsForAdmin(role: string, branchId: string | null) {
   return await db.transaction(async (tx) => {
-    // 1. Set session parameter (clears automatically after commit)
-    await tx.execute(
-      sql`SET LOCAL app.current_branch_id = ${branchId}`
-    );
+    // Set local RLS variables in the active transaction
+    if (role === 'super_admin') {
+      await tx.execute(sql`SET LOCAL app.current_role = 'super_admin'`);
+    } else {
+      await tx.execute(sql`SET LOCAL app.current_role = 'branch_admin'`);
+      if (branchId) {
+        await tx.execute(sql`SET LOCAL app.current_branch_id = ${branchId}`);
+      }
+    }
 
-    // 2. Query bookings as usual.
-    // PostgreSQL will automatically intercept and filter the results!
-    const results = await tx.select().from(bookings);
-    return results;
-  });
-}
-```
-
-If querying as a Super Admin:
-```typescript
-export async function getAllBookingsGlobal() {
-  return await db.transaction(async (tx) => {
-    // Set current_role parameter to super_admin to bypass RLS filters
-    await tx.execute(
-      sql`SET LOCAL app.current_role = 'super_admin'`
-    );
-
+    // Query bookings as usual - Postgres RLS intercepts and filters rows automatically
     return await tx.select().from(bookings);
   });
 }
 ```
+
+### 4. How the CRM Metrics Query is Coded
+This is the TypeScript/Drizzle equivalent of a complex aggregation query. It uses a Left Join to ensure customers with zero bookings are still included, but spend metrics default to zero:
+
+```typescript
+export async function getCustomersWithMetrics(role: string, branchId: string | null) {
+  return await db.transaction(async (tx) => {
+    await setRlsContext(tx, role, branchId); // Configures app.current_branch_id / role
+
+    const list = await tx.select({
+      id: customers.id,
+      name: customers.name,
+      phone: customers.phone,
+      email: customers.email,
+      occasions: customers.occasions,
+      marketingConsent: customers.marketingConsent,
+      createdAt: customers.createdAt,
+      bookingsCount: sql<number>`count(${bookings.id})::int`,
+      // Sums price only for successful visits
+      totalSpend: sql<number>`coalesce(sum(case when ${bookings.status} in ('confirmed', 'rescheduled') then ${bookings.totalPrice} else 0 end), 0)::int`,
+      // Subquery matches the customer's last successful visit branch
+      lastVisitedBranch: sql<string | null>`(
+        select branch_id from bookings 
+        where customer_id = customers.id and status = 'confirmed' 
+        order by date desc, created_at desc limit 1
+      )`
+    })
+    .from(customers)
+    .leftJoin(bookings, eq(bookings.customerId, customers.id))
+    .groupBy(customers.id)
+    .orderBy(desc(customers.createdAt));
+
+    return list;
+  });
+}
+```
+
+### 5. How to Simulate the Cron Daily Scheduler Locally
+You can test the 7-day occasion matching script in development by triggering the cron endpoint manually:
+1. Ensure your `.env.local` contains a `CRON_SECRET` value.
+2. Send a `GET` request using Postman, curl, or a web browser to:
+   ```bash
+   http://localhost:3000/api/cron/crm-reminders
+   ```
+3. Pass the secret as a Bearer authorization header:
+   ```bash
+   Authorization: Bearer <your_cron_secret>
+   ```
+4. Observe the terminal output to confirm matches and see simulated WhatsApp campaigns being dispatched.
