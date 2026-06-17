@@ -15,13 +15,62 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
   const [showPayment, setShowPayment] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [bookingId, setBookingId] = useState('');
+  const [isCreatingPending, setIsCreatingPending] = useState(false);
+  const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+  const [razorpayOrderId, setRazorpayOrderId] = useState('');
+  const [error, setError] = useState('');
 
-  const handleConfirm = () => {
-    const id = `DC-${Date.now().toString(36).toUpperCase()}`;
-    setBookingId(id);
-    console.log('📧 Confirmation email sent to:', booking.customer.email);
-    console.log('📱 WhatsApp notification to:', booking.customer.phone);
-    setShowConfirmation(true);
+  const handleProceedToPayment = async () => {
+    setIsCreatingPending(true);
+    setError('');
+    try {
+      const response = await fetch('/api/booking/create-pending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking }),
+      });
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to initialize booking');
+      }
+      setBookingId(data.bookingId);
+      setRazorpayOrderId(data.razorpayOrderId);
+      setShowPayment(true);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An error occurred. Please try again.');
+    } finally {
+      setIsCreatingPending(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    setIsConfirmingPayment(true);
+    setError('');
+    try {
+      const mockPaymentId = `pay_${Math.random().toString(36).substring(2, 14).toUpperCase()}`;
+      const response = await fetch('/api/booking/confirm-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId,
+          razorpayPaymentId: mockPaymentId,
+          razorpayOrderId,
+        }),
+      });
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to confirm payment');
+      }
+      console.log('📧 Confirmation email sent to:', booking.customer.email);
+      console.log('📱 WhatsApp notification to:', booking.customer.phone);
+      setShowConfirmation(true);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to confirm payment. Please contact support.');
+    } finally {
+      setIsConfirmingPayment(false);
+    }
   };
 
   if (showConfirmation) {
@@ -217,22 +266,28 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
             </span>
           </label>
 
+          {error && (
+            <div className="text-[#8B3A3A] text-[13px] font-sans mt-4">
+              ⚠ {error}
+            </div>
+          )}
+
           <button
-            disabled={!booking.agreedToTerms}
-            onClick={() => setShowPayment(true)}
+            disabled={!booking.agreedToTerms || isCreatingPending}
+            onClick={handleProceedToPayment}
             style={{
               marginTop: '32px',
               padding: '16px 64px',
-              background: booking.agreedToTerms ? '#C9973A' : 'rgba(201,151,58,0.2)',
-              color: booking.agreedToTerms ? '#080604' : 'rgba(201,151,58,0.4)',
-              cursor: booking.agreedToTerms ? 'pointer' : 'not-allowed',
+              background: (booking.agreedToTerms && !isCreatingPending) ? '#C9973A' : 'rgba(201,151,58,0.2)',
+              color: (booking.agreedToTerms && !isCreatingPending) ? '#080604' : 'rgba(201,151,58,0.4)',
+              cursor: (booking.agreedToTerms && !isCreatingPending) ? 'pointer' : 'not-allowed',
               fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
               letterSpacing: '0.2em', textTransform: 'uppercase',
               border: 'none', borderRadius: '2px',
               transition: 'all 0.3s ease',
             }}
           >
-            Proceed to Payment
+            {isCreatingPending ? 'Initializing...' : 'Proceed to Payment'}
           </button>
 
         </div>
@@ -291,18 +346,27 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
               </p>
             </div>
 
+            {error && (
+              <div className="text-[#8B3A3A] text-[13px] font-sans mb-4">
+                ⚠ {error}
+              </div>
+            )}
+
             <button
+              disabled={isConfirmingPayment}
               onClick={handleConfirm}
               style={{
                 padding: '16px 56px',
-                background: '#C9973A', color: '#080604',
+                background: isConfirmingPayment ? 'rgba(201,151,58,0.2)' : '#C9973A',
+                color: isConfirmingPayment ? 'rgba(201,151,58,0.4)' : '#080604',
                 fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
                 letterSpacing: '0.2em', textTransform: 'uppercase',
-                border: 'none', borderRadius: '2px', cursor: 'pointer',
+                border: 'none', borderRadius: '2px',
+                cursor: isConfirmingPayment ? 'not-allowed' : 'pointer',
               }}
               className="hover:bg-[#E8B96A] transition-colors mb-12"
             >
-              ✓ I've Completed the Payment
+              {isConfirmingPayment ? 'Verifying...' : "✓ I've Completed the Payment"}
             </button>
             
           </motion.div>
