@@ -5,10 +5,10 @@ import { bookings, bookingLogs, blockedDates, branches, customers, communication
 // Helper to set RLS session variables inside a transaction block
 async function setRlsContext(tx: any, role: string, branchId: string | null) {
   if (role === 'super_admin') {
-    await tx.execute(sql`SET LOCAL app.current_role = 'super_admin'`);
+    await tx.execute(sql`SELECT set_config('app.current_role', 'super_admin', true)`);
   } else if (branchId) {
-    await tx.execute(sql`SET LOCAL app.current_role = 'branch_admin'`);
-    await tx.execute(sql`SET LOCAL app.current_branch_id = ${branchId}`);
+    await tx.execute(sql`SELECT set_config('app.current_role', 'branch_admin', true)`);
+    await tx.execute(sql`SELECT set_config('app.current_branch_id', ${branchId}, true)`);
   } else {
     throw new Error('Unauthorized: No valid role or branch scope provided.');
   }
@@ -284,7 +284,7 @@ export async function bulkSendCrmCampaign(
 export async function cronTriggerCrmReminders() {
   return await db.transaction(async (tx) => {
     // Run as super-admin globally (bypasses RLS filters)
-    await tx.execute(sql`SET LOCAL app.current_role = 'super_admin'`);
+    await tx.execute(sql`SELECT set_config('app.current_role', 'super_admin', true)`);
 
     // Target day calculation (today + 7 days)
     const targetDate = new Date();
