@@ -24,7 +24,7 @@ export async function DELETE(
 
     const result = await unblockDate(admin.role, admin.branchId, blockedDateId);
 
-    return NextResponse.json({ success: true, ...result }, { headers: corsHeaders() });
+    return NextResponse.json(result, { headers: corsHeaders() });
   } catch (error: any) {
     console.error('Error unblocking date:', error);
     return NextResponse.json(
