@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, ReactNode, ReactElement } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../lib/auth';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
     const { isAuthenticated } = useAuth();
 
@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children }) => {
         }
     }, [isAuthenticated, router]);
 
-    return isAuthenticated ? children : null;
+    return (isAuthenticated ? children : null) as ReactElement | null;
 };
 
 export default ProtectedRoute;
