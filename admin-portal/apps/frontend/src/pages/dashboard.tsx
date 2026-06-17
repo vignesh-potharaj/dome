@@ -1,22 +1,31 @@
-import React from 'react';
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState } from 'react';
 import ProtectedRoute from '../components/ProtectedRoute';
+import Layout from '../components/Layout';
+import CalendarView from '../components/CalendarView';
+import AppointmentManager from '../components/AppointmentManager';
+import SettingsPanel from '../components/SettingsPanel';
 
 const Dashboard = () => {
-  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<string>('calendar');
 
-  useEffect(() => {
-    // Logic to fetch user data or handle redirection if needed
-  }, []);
+  const renderActiveView = () => {
+    switch (activeTab) {
+      case 'calendar':
+        return <CalendarView />;
+      case 'bookings':
+        return <AppointmentManager />;
+      case 'settings':
+        return <SettingsPanel />;
+      default:
+        return <CalendarView />;
+    }
+  };
 
   return (
     <ProtectedRoute>
-      <div>
-        <h1>Dashboard</h1>
-        <p>Welcome to your dashboard!</p>
-        {/* Additional user-specific information can be displayed here */}
-      </div>
+      <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+        {renderActiveView()}
+      </Layout>
     </ProtectedRoute>
   );
 };
