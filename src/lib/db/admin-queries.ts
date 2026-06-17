@@ -1,6 +1,6 @@
-import { eq, and, sql, desc } from 'drizzle-orm';
+import { eq, and, sql, desc, inArray } from 'drizzle-orm';
 import { db } from './index';
-import { bookings, bookingLogs, blockedDates, branches, customers } from './schema';
+import { bookings, bookingLogs, blockedDates, branches, customers, communicationLogs } from './schema';
 
 // Helper to set RLS session variables inside a transaction block
 async function setRlsContext(tx: any, role: string, branchId: string | null) {
@@ -195,5 +195,142 @@ export async function updateBranchSettings(
       .returning();
 
     return updated;
+  });
+}
+
+// 7. Get Customers list with booking counts and spend metrics
+export async function getCustomersWithMetrics(role: string, branchId: string | null) {
+  return await db.transaction(async (tx) => {
+    await setRlsContext(tx, role, branchId);
+
+    // Aggregates bookings per customer under RLS constraints
+    const list = await tx.select({
+      id: customers.id,
+      name: customers.name,
+      phone: customers.phone,
+      email: customers.email,
+      occasions: customers.occasions,
+      marketingConsent: customers.marketingConsent,
+      createdAt: customers.createdAt,
+      bookingsCount: sql<number>`count(${bookings.id})::int`,
+      totalSpend: sql<number>`coalesce(sum(case when ${bookings.status} in ('confirmed', 'rescheduled') then ${bookings.totalPrice} else 0 end), 0)::int`,
+      lastVisitedBranch: sql<string | null>`(
+        select branch_id from bookings 
+        where customer_id = customers.id and status = 'confirmed' 
+        order by date desc, created_at desc limit 1
+      )`
+    })
+    .from(customers)
+    .leftJoin(bookings, eq(bookings.customerId, customers.id))
+    .groupBy(customers.id)
+    .orderBy(desc(customers.createdAt));
+
+    return list;
+  });
+}
+
+// 8. Bulk send manual campaign template logging (with DPDP consent checks)
+export async function bulkSendCrmCampaign(
+  adminId: string,
+  role: string,
+  branchId: string | null,
+  payload: {
+    customerIds: string[];
+    templateId: string;
+    templateBody: string;
+  }
+) {
+  if (payload.customerIds.length === 0) {
+    return { success: true, count: 0 };
+  }
+
+  return await db.transaction(async (tx) => {
+    await setRlsContext(tx, role, branchId);
+
+    // Retrieve requested customers who explicitly consented to marketing messages
+    const targets = await tx.select()
+      .from(customers)
+      .where(
+        and(
+          inArray(customers.id, payload.customerIds),
+          eq(customers.marketingConsent, true)
+        )
+      );
+
+    const logEntries = [];
+    const campaignType = payload.templateId.includes('birthday') ? 'crm_birthday' : 'crm_anniversary';
+
+    for (const customer of targets) {
+      const [log] = await tx.insert(communicationLogs)
+        .values({
+          customerId: customer.id,
+          type: campaignType,
+          channel: 'whatsapp',
+          recipient: customer.phone,
+          status: 'sent',
+          createdAt: new Date(),
+        })
+        .returning();
+
+      logEntries.push(log);
+      console.log(`[WhatsApp API Simulator] Sent template '${payload.templateId}' to '${customer.name}' (${customer.phone})`);
+    }
+
+    return { success: true, count: targets.length, logs: logEntries };
+  });
+}
+
+// 9. Cron trigger: fetch customer occasions 7 days out and send automated reminders
+export async function cronTriggerCrmReminders() {
+  return await db.transaction(async (tx) => {
+    // Run as super-admin globally (bypasses RLS filters)
+    await tx.execute(sql`SET LOCAL app.current_role = 'super_admin'`);
+
+    // Target day calculation (today + 7 days)
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 7);
+    const targetMonth = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const targetDay = String(targetDate.getDate()).padStart(2, '0');
+    const targetMonthDay = `${targetMonth}-${targetDay}`;
+
+    // Get all consented customers
+    const candidates = await tx.select()
+      .from(customers)
+      .where(eq(customers.marketingConsent, true));
+
+    const matches: { customer: typeof customers.$inferSelect; type: string }[] = [];
+
+    // Filter candidates for matching month-day birthday or anniversary dates
+    for (const c of candidates) {
+      const occasions = c.occasions as Record<string, string> || {};
+      for (const [type, dateStr] of Object.entries(occasions)) {
+        if (dateStr && dateStr.length >= 10 && dateStr.substring(5, 10) === targetMonthDay) {
+          matches.push({ customer: c, type });
+        }
+      }
+    }
+
+    const logEntries = [];
+
+    for (const match of matches) {
+      const c = match.customer;
+      const campaignType = match.type === 'birthday' ? 'crm_birthday' : 'crm_anniversary';
+
+      const [log] = await tx.insert(communicationLogs)
+        .values({
+          customerId: c.id,
+          type: campaignType,
+          channel: 'whatsapp',
+          recipient: c.phone,
+          status: 'sent',
+          createdAt: new Date(),
+        })
+        .returning();
+
+      logEntries.push(log);
+      console.log(`[Cron CRM Dispatcher] Sent automated 7-day ${match.type} reminder to '${c.name}' (${c.phone})`);
+    }
+
+    return { success: true, processedCount: matches.length, logs: logEntries };
   });
 }
