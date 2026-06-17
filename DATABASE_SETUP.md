@@ -29,7 +29,8 @@ We connect to PostgreSQL using **two different methods** depending on the runtim
 ```
                   ┌─────────────────────────────────────┐
                   │      Vercel Serverless Hosting      │
-                  │  (Next.js App & Admin UI Frontend)  │
+                  │ (Next.js Customer App, Admin APIs,  │
+                  │   & Serverless Auth Endpoints)      │
                   └──────────────────┬──────────────────┘
                                      │
                              Queries (Port 6543)
@@ -47,18 +48,19 @@ We connect to PostgreSQL using **two different methods** depending on the runtim
                                      │
                   ┌──────────────────┴──────────────────┐
                   │       VM / Persistent Container     │
-                  │  (Express.js Auth Service & Seeds)  │
+                  │ (Express.js Auth Service / Migration)│
                   └─────────────────────────────────────┘
 ```
 
 ### 1. The Transaction Pooler (Port 6543)
-- **Used by**: The Next.js apps (Customer website, Admin UI APIs, and Cron endpoints).
+- **Used by**: The Next.js apps (Customer website, Admin UI APIs, serverless login/register routes, and Cron endpoints).
 - **Why**: Next.js runs in serverless functions that spin up and down instantly. If every serverless function established a direct socket connection, the database would quickly run out of available connection slots. The pooler sits in between, letting hundreds of serverless tasks share a few real database connections.
 - **Limitation**: Session-level SQL commands (like `SET timezone`) are **not allowed** through the pooler, because connections are shared dynamically.
 
 ### 2. The Direct Connection (Port 5432)
-- **Used by**: The Express `auth-service` and database migration commands (like Drizzle Kit).
-- **Why**: The Express server is a long-running program that starts once and stays alive 24/7. It can safely manage its own small pool (e.g., 5-10 persistent connections). Drizzle migrations also need direct connections to lock tables during schema updates.
+- **Used by**: Database migration commands (like Drizzle Kit) and optionally the external Express `auth-service` container.
+- **Why**: Persistent environments (like VMs or Express.js containers) stay alive 24/7 and can safely manage their own small pool (e.g., 5-10 persistent connections). Drizzle migrations also need direct connections to lock tables during schema updates.
+- **Vercel Unified Route Option**: To allow 100% serverless hosting on Vercel without external Node/Express server dependencies, we have integrated the authentication handlers directly into Next.js at `/api/auth/login` and `/api/auth/register`. These use the serverless transaction pooler.
 
 ---
 
@@ -70,7 +72,7 @@ Our system is multi-tenant: branch admins from Kokapet and Sainikpuri share the 
 RLS blocks queries at the database engine level. If RLS is enabled, you cannot query rows unless you meet the policy requirements.
 We use **Session-Variable RLS**, which allows us to keep our database portable across any cloud host.
 
-1. The Express backend validates a user's JWT.
+1. The Next.js/Express API backend validates a user's JWT.
 2. Inside a database transaction block, the backend sets a temporary parameter:
    ```sql
    SET LOCAL app.current_branch_id = 'kokapet';
