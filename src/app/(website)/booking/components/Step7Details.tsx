@@ -12,6 +12,14 @@ interface Step7DetailsProps {
 
 export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: Step7DetailsProps) {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  
+  // OTP-specific states
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [otpError, setOtpError] = useState('');
 
   const hasLedNameAddon = booking.addOns.includes('led-name');
   const ledLettersCount = booking.ledName ? booking.ledName.replace(/[^a-zA-Z0-9]/g, '').length : 0;
@@ -26,6 +34,87 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
     { id: 'specialNote',  label: 'Special Request / Note',  type: 'textarea',placeholder: 'Anything specific you\'d like us to know…', required: false },
   ];
 
+  const sendOtp = async () => {
+    const phoneNumber = booking.customer.phone;
+    if (!phoneNumber || phoneNumber.trim().length < 10) {
+      alert('Please enter a valid WhatsApp phone number first.');
+      return;
+    }
+    setSendingOtp(true);
+    setOtpError('');
+    try {
+      const res = await fetch('/api/booking/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneNumber.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsOtpModalOpen(true);
+      } else {
+        alert(data.error || 'Failed to send OTP. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred. Please check your connection and try again.');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    if (otpCode.length !== 6) {
+      setOtpError('Please enter a 6-digit code.');
+      return;
+    }
+    setVerifyingOtp(true);
+    setOtpError('');
+    try {
+      const res = await fetch('/api/booking/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: booking.customer.phone.trim(), code: otpCode.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsPhoneVerified(true);
+        setIsOtpModalOpen(false);
+        setOtpCode('');
+
+        // Auto-populate returning customer profile details
+        if (data.customer) {
+          const profile = data.customer;
+          const mergedCustomer = {
+            ...booking.customer,
+            name: profile.name || booking.customer.name,
+            email: profile.email || booking.customer.email,
+          };
+
+          // Try to match returning occasions JSON keys (e.g. birthday, anniversary) to Step 7 dropdown options
+          if (profile.occasions) {
+            const occasionKeys = Object.keys(profile.occasions);
+            if (occasionKeys.length > 0) {
+              const matchedKey = occasionKeys[0]; // e.g. 'birthday'
+              const formattedOccasion = matchedKey.charAt(0).toUpperCase() + matchedKey.slice(1);
+              if (['Birthday', 'Anniversary', 'Proposal', 'Celebration', 'Date Night', 'Baby Shower', 'Other'].includes(formattedOccasion)) {
+                mergedCustomer.occasion = formattedOccasion;
+              }
+            }
+          }
+
+          onUpdate('customer', mergedCustomer);
+        }
+      } else {
+        setOtpError(data.error || 'Invalid code, please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      setOtpError('Failed to verify OTP. Please try again.');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
   const handleNext = () => {
     const newErrors: Record<string, boolean> = {};
     let isValid = true;
@@ -33,6 +122,10 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
     fields.forEach(f => {
       if (f.required && !booking.customer[f.id]) {
         newErrors[f.id] = true;
+        isValid = false;
+      }
+      if (f.id === 'phone' && !isPhoneVerified) {
+        newErrors['phone'] = true;
         isValid = false;
       }
     });
@@ -50,6 +143,11 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
   };
 
   const handleInputChange = (id: string, val: string) => {
+    // Reset phone verification if WhatsApp number changes
+    if (id === 'phone' && isPhoneVerified) {
+      setIsPhoneVerified(false);
+    }
+
     onUpdate('customer', { ...booking.customer, [id]: val });
     if (errors[id] && val.trim() !== '') {
       setErrors(e => ({ ...e, [id]: false }));
@@ -84,7 +182,37 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                     {f.label} {f.required && '*'}
                   </label>
                   
-                  {f.type === 'textarea' ? (
+                  {f.id === 'phone' ? (
+                    <div className="flex gap-3 w-full">
+                      <div className="relative flex-grow">
+                        <input
+                          type={f.type}
+                          value={value}
+                          disabled={isPhoneVerified}
+                          onChange={e => handleInputChange(f.id, e.target.value)}
+                          placeholder={f.placeholder}
+                          className="w-full bg-[rgba(201,151,58,0.04)] border border-[rgba(201,151,58,0.2)] rounded-[2px] p-[14px_18px] text-[#F5EDD8] font-sans font-light text-[14px] outline-none transition-colors focus:border-[#C9973A] focus:bg-[rgba(201,151,58,0.07)] disabled:opacity-80"
+                          style={{ borderColor: hasError ? '#8B3A3A' : undefined }}
+                        />
+                        {isPhoneVerified && (
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#C9973A] font-sans font-medium text-[11px] tracking-wide">
+                            VERIFIED ✓
+                          </span>
+                        )}
+                      </div>
+                      
+                      {!isPhoneVerified && (
+                        <button
+                          type="button"
+                          disabled={sendingOtp || value.trim().length < 10}
+                          onClick={sendOtp}
+                          className="px-6 bg-[rgba(201,151,58,0.1)] hover:bg-[rgba(201,151,58,0.18)] border border-[rgba(201,151,58,0.3)] text-[#C9973A] font-sans font-medium text-[12px] uppercase tracking-wider rounded-[2px] transition-colors disabled:opacity-30 cursor-pointer whitespace-nowrap"
+                        >
+                          {sendingOtp ? 'Sending...' : 'Verify'}
+                        </button>
+                      )}
+                    </div>
+                  ) : f.type === 'textarea' ? (
                     <textarea
                       value={value}
                       onChange={e => handleInputChange(f.id, e.target.value)}
@@ -121,7 +249,11 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                   )}
                   
                   {hasError && (
-                    <span className="text-[#8B3A3A] text-[11px] font-sans mt-1">This field is required</span>
+                    <span className="text-[#8B3A3A] text-[11px] font-sans mt-1">
+                      {f.id === 'phone' && booking.customer.phone && !isPhoneVerified
+                        ? 'Please verify this WhatsApp number first'
+                        : 'This field is required'}
+                    </span>
                   )}
                 </div>
               );
@@ -200,6 +332,69 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
         </div>
 
       </div>
+
+      {/* OTP Verification Modal */}
+      {isOtpModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#080604]/90 backdrop-blur-sm p-4">
+          <div 
+            className="w-full max-w-[420px] rounded-[4px] border border-[#C9973A]/30 bg-[#080604]/95 p-8 md:p-10 shadow-2xl relative"
+            style={{ boxShadow: '0 0 50px rgba(201,151,58,0.15)' }}
+          >
+            <h3 className="font-display font-light text-[24px] md:text-[28px] text-[#F5EDD8] text-center tracking-wide mb-2">
+              VERIFY YOUR PHONE
+            </h3>
+            <p className="font-sans font-light text-[12px] text-[#B8A882] text-center mb-8 leading-relaxed">
+              We have sent a 6-digit verification code to <span className="text-[#C9973A] font-medium">{booking.customer.phone}</span>. Please enter it below.
+            </p>
+
+            <div className="flex flex-col gap-6 w-full">
+              <div className="flex flex-col items-center">
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={e => {
+                    const clean = e.target.value.replace(/[^0-9]/g, '');
+                    setOtpCode(clean);
+                    if (otpError) setOtpError('');
+                  }}
+                  placeholder="0 0 0 0 0 0"
+                  className="w-full tracking-[0.5em] text-center bg-[rgba(201,151,58,0.04)] border border-[rgba(201,151,58,0.2)] rounded-[2px] p-[16px_0] text-[24px] font-display font-light text-[#F5EDD8] outline-none focus:border-[#C9973A] focus:bg-[rgba(201,151,58,0.07)]"
+                />
+                
+                {otpError && (
+                  <span className="text-[#8B3A3A] text-[11px] font-sans mt-3 text-center">{otpError}</span>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  disabled={verifyingOtp}
+                  onClick={verifyOtp}
+                  className="w-full py-4 bg-[#C9973A] hover:bg-[#E8B96A] text-[#080604] font-sans font-semibold text-[12px] tracking-[0.2em] uppercase rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {verifyingOtp ? 'VERIFYING...' : 'VERIFY CODE'}
+                </button>
+
+                <button
+                  disabled={sendingOtp}
+                  onClick={sendOtp}
+                  className="w-full py-2 bg-transparent text-[#B8A882] hover:text-[#C9973A] font-sans font-light text-[11px] tracking-[0.1em] uppercase transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {sendingOtp ? 'SENDING...' : 'RESEND OTP'}
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsOtpModalOpen(false)}
+              className="absolute top-4 right-4 text-[#B8A882] hover:text-[#C9973A] transition-colors bg-transparent border-none text-[16px] cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

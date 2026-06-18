@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 const locations = [
@@ -26,6 +27,32 @@ interface Step1LocationProps {
 }
 
 export default function Step1Location({ selectedLocation, onUpdate, onNext }: Step1LocationProps) {
+  const [dbBranches, setDbBranches] = useState<{ id: string; status: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchBranches() {
+      try {
+        const res = await fetch('/api/booking/branches');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.branches)) {
+          setDbBranches(data.branches);
+        }
+      } catch (err) {
+        console.error('Failed to fetch branches:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchBranches();
+  }, []);
+
+  const activeLocations = locations.filter((loc) => {
+    if (loading) return true;
+    const dbBranch = dbBranches.find((db) => db.id === loc.id);
+    return dbBranch ? dbBranch.status !== 'disabled' : true;
+  });
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[64px] px-6 pb-24">
       
@@ -37,7 +64,7 @@ export default function Step1Location({ selectedLocation, onUpdate, onNext }: St
       </p>
 
       <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch w-full max-w-4xl">
-        {locations.map((loc) => {
+        {activeLocations.map((loc) => {
           const isSelected = selectedLocation === loc.id;
           
           return (

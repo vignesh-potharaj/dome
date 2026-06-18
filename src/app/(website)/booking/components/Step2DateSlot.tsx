@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import CalendarPicker from './CalendarPicker';
 
@@ -10,16 +11,51 @@ const allSlots = [
   '11:00 PM – 12:30 AM',
 ];
 
-const blockedSlots = ['7:00 PM – 8:30 PM'];
-
 interface Step2DateSlotProps {
+  locationId: string | null;
   selectedDate: Date | null;
   selectedSlot: string | null;
   onUpdate: (key: string, value: any) => void;
   onNext: () => void;
 }
 
-export default function Step2DateSlot({ selectedDate, selectedSlot, onUpdate, onNext }: Step2DateSlotProps) {
+export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, onUpdate, onNext }: Step2DateSlotProps) {
+  const [unavailableSlots, setUnavailableSlots] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedDate || !locationId) {
+      setUnavailableSlots([]);
+      return;
+    }
+
+    async function fetchAvailability() {
+      setLoading(true);
+      try {
+        const dateStr = selectedDate instanceof Date 
+          ? selectedDate.toISOString().split('T')[0]
+          : String(selectedDate).split('T')[0];
+
+        const res = await fetch(`/api/booking/availability?branchId=${locationId}&date=${dateStr}`);
+        const data = await res.json();
+        
+        if (data.success && data.slots) {
+          const blocked = Object.entries(data.slots)
+            .filter(([_, status]: any) => !status.available)
+            .map(([slot]) => slot);
+          
+          setUnavailableSlots(blocked);
+        }
+      } catch (err) {
+        console.error('Error fetching slot availability:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAvailability();
+  }, [selectedDate, locationId]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[64px] px-6 pb-24">
       
@@ -44,25 +80,26 @@ export default function Step2DateSlot({ selectedDate, selectedSlot, onUpdate, on
         <div className="w-full md:w-[60%] flex flex-col items-center md:items-start">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
             {allSlots.map((slot) => {
-              const isBlocked = blockedSlots.includes(slot);
+              const isBlocked = unavailableSlots.includes(slot);
               const isSelected = selectedSlot === slot;
+              const isSlotDisabled = isBlocked || !selectedDate || loading;
 
               return (
                 <button
                   key={slot}
-                  disabled={isBlocked || !selectedDate}
+                  disabled={isSlotDisabled}
                   onClick={() => onUpdate('slot', slot)}
                   className={`relative flex flex-col items-center justify-center h-[56px] w-full border rounded-[2px] transition-all duration-200
-                    ${!selectedDate ? 'opacity-30 cursor-not-allowed border-[rgba(201,151,58,0.2)]' : ''}
-                    ${isBlocked && selectedDate ? 'bg-[rgba(255,255,255,0.03)] border-transparent cursor-not-allowed' : ''}
-                    ${!isBlocked && !isSelected && selectedDate ? 'border-[rgba(201,151,58,0.2)] hover:border-[#C9973A] bg-transparent text-[#B8A882]' : ''}
+                    ${(!selectedDate || loading) ? 'opacity-30 cursor-not-allowed border-[rgba(201,151,58,0.2)]' : ''}
+                    ${isBlocked && selectedDate && !loading ? 'bg-[rgba(255,255,255,0.03)] border-transparent cursor-not-allowed' : ''}
+                    ${!isBlocked && !isSelected && selectedDate && !loading ? 'border-[rgba(201,151,58,0.2)] hover:border-[#C9973A] bg-transparent text-[#B8A882]' : ''}
                     ${isSelected ? 'border-[#C9973A] bg-[rgba(201,151,58,0.12)] text-[#F5EDD8]' : ''}
                   `}
                 >
                   <span className={`font-sans text-[14px] ${isBlocked ? 'text-[rgba(184,168,130,0.3)] line-through' : ''}`}>
                     {slot}
                   </span>
-                  {isBlocked && selectedDate && (
+                  {isBlocked && selectedDate && !loading && (
                     <span className="font-sans font-medium text-[9px] tracking-[0.2em] text-[#8B3A3A] mt-1 absolute bottom-1">
                       BOOKED
                     </span>

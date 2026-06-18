@@ -96,7 +96,7 @@ export default function BookingPage() {
   const renderStep = () => {
     switch (step) {
       case 1: return <Step1Location selectedLocation={booking.location} onUpdate={update} onNext={next} />;
-      case 2: return <Step2DateSlot selectedDate={booking.date} selectedSlot={booking.slot} onUpdate={update} onNext={next} />;
+      case 2: return <Step2DateSlot locationId={booking.location} selectedDate={booking.date} selectedSlot={booking.slot} onUpdate={update} onNext={next} />;
       case 3: return <Step3Package selectedPackage={booking.package} onUpdate={update} onNext={next} />;
       case 4: return <Step4Balloon selectedColor={booking.balloonColor} onUpdate={update} onNext={next} />;
       case 5: return <Step5Cake selectedCake={booking.cakeOption} sparklers={booking.sparklers} eggless={booking.eggless} cakeMessage={booking.customer.cakeMessage} customer={booking.customer} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
