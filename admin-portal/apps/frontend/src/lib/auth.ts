@@ -1,11 +1,31 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-const API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:5000/api/auth';
+const API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3000/api/auth';
+
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (typeof payload.exp !== 'number') return false;
+    return payload.exp < Math.floor(Date.now() / 1000);
+  } catch (e) {
+    return true;
+  }
+};
 
 const hasToken = (): boolean => {
   if (typeof window === 'undefined') return false;
-  return !!localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  if (!token) return false;
+
+  if (isTokenExpired(token)) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    return false;
+  }
+  return true;
 };
 
 const getUser = (): any => {
