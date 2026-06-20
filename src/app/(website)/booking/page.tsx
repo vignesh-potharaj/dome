@@ -108,7 +108,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="relative min-h-[100vh] w-full bg-[#09090E] overflow-hidden selection:bg-[#00A7FA] selection:text-[#09090E]">
+    <div className="relative min-h-[100vh] w-full bg-[#09090E] overflow-hidden selection:bg-[#00A7FA] selection:text-[#09090E]" data-lenis-prevent>
       <ProgressBar currentStep={step} />
 
       <AnimatePresence mode="wait">
