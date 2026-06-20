@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import SmoothScroll from "@/components/SmoothScroll";
 
 export default function WebsiteLayout({
@@ -8,7 +7,6 @@ export default function WebsiteLayout({
 }>) {
   return (
     <SmoothScroll>
-      <Navbar />
       {children}
     </SmoothScroll>
   );

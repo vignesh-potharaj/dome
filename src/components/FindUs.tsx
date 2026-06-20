@@ -20,31 +20,23 @@ const locations = [
 ];
 
 export default function FindUs() {
-  const headingText = "FIND US";
-
   return (
-    <section id="locations" className="relative w-full bg-[#080604] py-32 overflow-hidden">
+    <section id="locations" className="relative w-full bg-[#09090E] py-32 overflow-hidden border-t border-white/5">
       <div className="max-w-6xl mx-auto px-6 md:px-12 flex flex-col items-center">
         
-        {/* Section Heading with Staggered Animation */}
-        <div className="flex overflow-hidden mb-16">
-          {headingText.split("").map((letter, index) => (
-            <motion.span
-              key={index}
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-              viewport={{ once: true, margin: '-60px' }}
-              className="font-display font-light text-[48px] md:text-[64px] text-[#F5EDD8] tracking-[0.2em]"
-            >
-              {letter === " " ? "\u00A0" : letter}
-            </motion.span>
-          ))}
+        {/* Section Heading aligned with Spotlight / Packages style */}
+        <div className="flex flex-col items-center gap-3 mb-16 text-center">
+          <span className="font-manuka text-xl text-ape-blue tracking-widest font-bold uppercase animate-pulse">
+            LOCATIONS
+          </span>
+          <h2 className="font-manuka text-5xl md:text-7xl lg:text-8xl leading-none text-white font-bold select-none tracking-tight uppercase">
+            FIND DOME CAFE
+          </h2>
         </div>
-
+ 
         <div className="relative flex flex-col md:flex-row w-full max-w-4xl justify-between items-start gap-16 md:gap-8">
           
-          {/* Gold Vertical Divider Line */}
+          {/* Cyber Blue Vertical Divider Line */}
           <motion.div
             initial={{ scaleY: 0 }}
             whileInView={{ scaleY: 1 }}
@@ -54,11 +46,11 @@ export default function FindUs() {
             style={{
               width: '1px',
               height: '280px',
-              background: 'linear-gradient(to bottom, transparent, #C9973A 30%, #C9973A 70%, transparent)',
+              background: 'linear-gradient(to bottom, transparent, #00A7FA 30%, #00A7FA 70%, transparent)',
               transformOrigin: 'top center',
             }}
           />
-
+ 
           {/* Location Cards */}
           {locations.map((loc, i) => (
             <motion.div
@@ -69,23 +61,23 @@ export default function FindUs() {
               viewport={{ once: true, margin: '-60px' }}
               className={`flex flex-col w-full md:w-[45%] ${i === 0 ? 'md:pr-12 items-start md:items-end md:text-right' : 'md:pl-12 items-start'}`}
             >
-              <p className="font-sans font-medium text-[11px] tracking-[0.4em] text-[#C9973A] mb-4">
+              <p className="font-sans font-medium text-[11px] tracking-[0.4em] text-ape-blue mb-4 uppercase">
                 {loc.area}
               </p>
-              <h3 className="font-display font-light text-[28px] text-[#F5EDD8] mb-6 leading-snug">
+              <h3 className="font-sans font-semibold text-xl md:text-2xl text-white mb-6 leading-snug">
                 {loc.address}
               </h3>
-              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-2">
+              <p className="font-sans font-light text-[13px] text-white/70 mb-2">
                 {loc.hours}
               </p>
-              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-6 opacity-80">
+              <p className="font-sans font-light text-[13px] text-white/40 mb-6 uppercase tracking-wider">
                 {loc.note}
               </p>
               <a 
                 href={loc.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-sans font-medium text-[12px] tracking-[0.1em] text-[#C9973A] uppercase hover:opacity-80 transition-opacity border-b border-[#C9973A] pb-1"
+                className="font-sans font-medium text-[12px] tracking-[0.1em] text-ape-blue uppercase hover:text-white hover:border-white transition-all border-b border-ape-blue/40 pb-1"
               >
                 Get Directions →
               </a>

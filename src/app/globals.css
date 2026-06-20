@@ -9,8 +9,12 @@
   --color-cream: #F5EDD8;
   --color-cream-muted: #B8A882;
 
-  --font-display: var(--font-cormorant);
-  --font-sans: var(--font-inter);
+  --color-ape-blue: #00A7FA;
+  --color-ape-dark-navy: #09090E;
+  --color-ape-grey: #121217;
+
+  --font-display: var(--font-antonio);
+  --font-sans: var(--font-space-grotesk);
 }
 
 html {
@@ -18,17 +22,89 @@ html {
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: #09090E;
+  color: #FFFFFF;
   font-family: var(--font-sans);
   overflow-x: hidden;
 }
 
-section {
-  /* Removed scroll-snap per user request */
+/* Manuka Font Mapping using Antonio */
+.font-manuka {
+  font-family: var(--font-display), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+/* Layout Utilities from HTML */
+.px-container {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+@media (min-width: 768px) {
+  .px-container {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+/* Background grid line patterns */
+.Background_grid__B6Ncz {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-size: 80px 80px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+.Background_grid-wrap__MIDDp {
+  width: 100%;
+  height: 100%;
+  transform: perspective(1000px) rotateX(60deg) translateY(-30%) translateZ(-100px);
+  transform-origin: top center;
+  opacity: 0.25;
+}
+
+/* Button & Link animations */
+.label__inner--clone {
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.label__inner--main {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+a:hover .label__inner--main,
+button:hover .label__inner--main {
+  transform: translateY(-100%);
+}
+
+a:hover .label__inner--clone,
+button:hover .label__inner--clone {
+  transform: translateY(0);
+}
+
+/* Spotlight Card Hover Depth */
+.spotlight-card {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spotlight-card:hover {
+  transform: perspective(800px) scale(1.52) rotateX(4deg) rotateY(-8deg) rotateZ(5deg) !important;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(0, 167, 250, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(0, 167, 250, 0.55);
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
 }

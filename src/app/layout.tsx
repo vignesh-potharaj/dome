@@ -1,27 +1,26 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Antonio, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
 import { SanityLive } from "@/sanity/lib/live";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
+const antonio = Antonio({
+  variable: "--font-antonio",
   subsets: ["latin"],
-  weight: ["300", "400", "600"],
-  style: ["normal", "italic"],
+  weight: ["300", "400", "700"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Dome Cafe Hyderabad",
-  description: "India's first dome-shaped celebration café",
+  title: "APECHAIN",
+  description: "The Place to Ape",
 };
 
 export default async function RootLayout({
@@ -34,7 +33,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${inter.variable} antialiased`}
+      className={`${antonio.variable} ${spaceGrotesk.variable} antialiased`}
     >
       <head>
         <link rel="preload" as="image" href="/images/birthday_v3.png" />

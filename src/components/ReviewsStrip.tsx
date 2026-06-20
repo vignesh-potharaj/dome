@@ -17,16 +17,16 @@ const defaultReviews: Review[] = [
 
 function ReviewCard({ name, text, stars }: Review) {
   return (
-    <div className="w-[320px] shrink-0 border border-[rgba(201,151,58,0.15)] p-7 bg-[#080604] flex flex-col justify-between h-full">
+    <div className="w-[300px] md:w-[320px] shrink-0 border border-white/5 p-7 bg-white/5 flex flex-col justify-between h-[200px] rounded-xl transition-all duration-300 hover:border-white/10 hover:bg-white/10">
       <div>
-        <div className="text-[#C9973A] text-[14px] tracking-widest mb-4">
+        <div className="text-ape-blue text-[14px] tracking-widest mb-3">
           {'★'.repeat(stars)}
         </div>
-        <p className="font-display italic font-light text-[18px] text-[#B8A882] leading-[1.7] mb-6">
+        <p className="font-sans text-[14px] text-white/70 leading-relaxed mb-4 line-clamp-3">
           "{text}"
         </p>
       </div>
-      <p className="font-sans font-medium text-[13px] text-[#F5EDD8]">
+      <p className="font-sans font-semibold text-xs tracking-wider text-white">
         {name}
       </p>
     </div>
@@ -37,22 +37,42 @@ export default function ReviewsStrip({ reviews = defaultReviews }: { reviews?: R
   const displayReviews = reviews.length > 0 ? reviews : defaultReviews;
 
   return (
-    <section className="relative w-full py-24 bg-[#080604] overflow-hidden border-t border-[rgba(201,151,58,0.1)]">
+    <section id="reviews" className="relative w-full py-32 bg-[#09090E] overflow-hidden border-t border-white/5">
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .marquee-track {
+          animation: marquee 35s linear infinite;
+        }
+      `}</style>
       
-      <div className="flex justify-center mb-16">
-        <h2 className="font-sans font-light text-[11px] tracking-[0.5em] text-[#B8A882] uppercase">
-          WHAT THEY'RE SAYING
-        </h2>
+      <div className="max-w-6xl mx-auto px-6 md:px-12 flex flex-col items-center">
+        {/* Section Heading aligned with other sections */}
+        <div className="flex flex-col items-center gap-3 mb-16 text-center">
+          <span className="font-manuka text-xl text-ape-blue tracking-widest font-bold uppercase animate-pulse">
+            REVIEWS
+          </span>
+          <h2 className="font-manuka text-5xl md:text-7xl lg:text-8xl leading-none text-white font-bold select-none tracking-tight uppercase">
+            WHAT THEY'RE SAYING
+          </h2>
+        </div>
       </div>
 
-      {/* Marquee Track Container */}
-      <div 
-        className="flex gap-6 hover:[animation-play-state:paused]" 
-        style={{ animation: 'marquee 30s linear infinite', width: 'max-content' }}
-      >
-        {[...displayReviews, ...displayReviews].map((r, i) => (
-          <ReviewCard key={i} {...r} />
-        ))}
+      {/* Marquee Track Container with side fades */}
+      <div className="relative w-full flex overflow-hidden">
+        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#09090E] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#09090E] to-transparent z-10 pointer-events-none"></div>
+        
+        <div 
+          className="flex gap-6 hover:[animation-play-state:paused] marquee-track shrink-0" 
+          style={{ width: 'max-content' }}
+        >
+          {[...displayReviews, ...displayReviews].map((r, i) => (
+            <ReviewCard key={i} {...r} />
+          ))}
+        </div>
       </div>
 
     </section>
