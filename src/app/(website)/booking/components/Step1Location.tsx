@@ -56,10 +56,10 @@ export default function Step1Location({ selectedLocation, onUpdate, onNext }: St
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[64px] px-6 pb-24">
       
-      <h2 className="font-display font-light text-[32px] md:text-[52px] text-[#F5EDD8] text-center tracking-[0.05em] leading-tight mb-3">
+      <h2 className="font-display font-light text-[32px] md:text-[52px] text-[#FFFFFF] text-center tracking-[0.05em] leading-tight mb-3">
         WHERE WOULD YOU LIKE TO CELEBRATE?
       </h2>
-      <p className="font-sans font-light text-[14px] text-[#B8A882] text-center mb-16">
+      <p className="font-sans font-light text-[14px] text-[#94A3B8] text-center mb-16">
         Select your preferred Dome Cafe location
       </p>
 
@@ -73,38 +73,38 @@ export default function Step1Location({ selectedLocation, onUpdate, onNext }: St
               onClick={() => onUpdate('location', loc.id)}
               className="relative w-full md:w-[340px] px-8 py-10 md:px-10 md:py-12 rounded-[4px] cursor-pointer transition-all duration-300"
               style={{
-                border: isSelected ? '1px solid #C9973A' : '1px solid rgba(201,151,58,0.18)',
-                background: isSelected ? 'rgba(201,151,58,0.10)' : 'rgba(201,151,58,0.04)',
-                boxShadow: isSelected ? '0 0 40px rgba(201,151,58,0.15)' : 'none',
+                border: isSelected ? '1px solid #00A7FA' : '1px solid rgba(0,167,250,0.18)',
+                background: isSelected ? 'rgba(0,167,250,0.10)' : 'rgba(0,167,250,0.04)',
+                boxShadow: isSelected ? '0 0 40px rgba(0,167,250,0.15)' : 'none',
               }}
               onMouseEnter={(e) => {
-                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(201,151,58,0.4)';
+                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(0,167,250,0.4)';
               }}
               onMouseLeave={(e) => {
-                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(201,151,58,0.18)';
+                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(0,167,250,0.18)';
               }}
             >
               {isSelected && (
-                <div className="absolute top-4 right-4 text-[#080604] bg-[#C9973A] w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold">
+                <div className="absolute top-4 right-4 text-[#09090E] bg-[#00A7FA] w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold">
                   ✓
                 </div>
               )}
 
-              <p className="font-sans font-medium text-[11px] tracking-[0.5em] text-[#C9973A] uppercase mb-3">
+              <p className="font-sans font-medium text-[11px] tracking-[0.5em] text-[#00A7FA] uppercase mb-3">
                 {loc.area}
               </p>
-              <h3 className="font-display font-light text-[22px] text-[#F5EDD8] mb-2 leading-snug">
+              <h3 className="font-display font-light text-[22px] text-[#FFFFFF] mb-2 leading-snug">
                 {loc.address}
               </h3>
-              <p className="font-sans font-light text-[13px] text-[#B8A882] mb-6">
+              <p className="font-sans font-light text-[13px] text-[#94A3B8] mb-6">
                 {loc.hours}
               </p>
 
               <ul className="flex flex-col gap-2">
                 {loc.perks.map((perk, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <span className="text-[#C9973A] text-[10px]">✦</span>
-                    <span className="font-sans font-light text-[12px] text-[#B8A882]">{perk}</span>
+                    <span className="text-[#00A7FA] text-[10px]">✦</span>
+                    <span className="font-sans font-light text-[12px] text-[#94A3B8]">{perk}</span>
                   </li>
                 ))}
               </ul>
@@ -121,12 +121,12 @@ export default function Step1Location({ selectedLocation, onUpdate, onNext }: St
           style={{
             marginTop: '40px',
             padding: '14px 56px',
-            background: '#C9973A', color: '#080604',
+            background: '#00A7FA', color: '#09090E',
             fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
             letterSpacing: '0.2em', textTransform: 'uppercase',
             border: 'none', borderRadius: '2px', cursor: 'pointer',
           }}
-          className="hover:bg-[#E8B96A] transition-colors"
+          className="hover:bg-[#89D0FF] transition-colors"
         >
           Continue →
         </motion.button>

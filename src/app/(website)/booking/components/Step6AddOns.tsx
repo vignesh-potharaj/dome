@@ -174,10 +174,10 @@ export default function Step6AddOns({ selectedAddOns, ledName, totalPrice, onUpd
   return (
     <div className="flex flex-col items-center justify-start min-h-[100vh] w-full pt-[100px] px-6 pb-[140px] overflow-y-auto">
       
-      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#F5EDD8] text-center mb-3">
+      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#FFFFFF] text-center mb-3">
         MAKE IT UNFORGETTABLE
       </h2>
-      <p className="font-sans font-light text-[14px] text-[#B8A882] text-center mb-16">
+      <p className="font-sans font-light text-[14px] text-[#94A3B8] text-center mb-16">
         Select as many as you like — all added to your booking
       </p>
 
@@ -191,34 +191,34 @@ export default function Step6AddOns({ selectedAddOns, ledName, totalPrice, onUpd
               onClick={() => handleToggle(addon.id)}
               className="relative w-full p-6 rounded-[2px] cursor-pointer transition-all duration-300 flex flex-col justify-between"
               style={{
-                border: isSelected ? '1px solid #C9973A' : '1px solid rgba(201,151,58,0.15)',
-                background: isSelected ? 'rgba(201,151,58,0.10)' : 'rgba(201,151,58,0.03)',
+                border: isSelected ? '1px solid #00A7FA' : '1px solid rgba(0,167,250,0.15)',
+                background: isSelected ? 'rgba(0,167,250,0.10)' : 'rgba(0,167,250,0.03)',
               }}
               onMouseEnter={(e) => {
-                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(201,151,58,0.35)';
+                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(0,167,250,0.35)';
               }}
               onMouseLeave={(e) => {
-                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(201,151,58,0.15)';
+                if (!isSelected) e.currentTarget.style.border = '1px solid rgba(0,167,250,0.15)';
               }}
             >
               <div>
                 {isSelected && (
-                  <div className="absolute top-4 right-4 text-[#080604] bg-[#C9973A] w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold z-10">
+                  <div className="absolute top-4 right-4 text-[#09090E] bg-[#00A7FA] w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold z-10">
                     ✓
                   </div>
                 )}
 
                 <span className="text-[28px]">{addon.icon}</span>
-                <h3 className="font-sans font-medium text-[14px] text-[#F5EDD8] mt-3">
+                <h3 className="font-sans font-medium text-[14px] text-[#FFFFFF] mt-3">
                   {addon.name}
                 </h3>
-                <p className="font-sans font-light text-[12px] text-[#B8A882] mt-1 mb-4 leading-relaxed">
+                <p className="font-sans font-light text-[12px] text-[#94A3B8] mt-1 mb-4 leading-relaxed">
                   {addon.desc}
                 </p>
               </div>
 
               <div>
-                <p className="font-display font-normal text-[18px] text-[#C9973A] mt-2 mb-2">
+                <p className="font-display font-normal text-[18px] text-[#00A7FA] mt-2 mb-2">
                   {addon.id === 'led-name' ? '₹49 / letter' : `+₹${addon.price}`}
                 </p>
               </div>
@@ -231,27 +231,27 @@ export default function Step6AddOns({ selectedAddOns, ledName, totalPrice, onUpd
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
         height: '80px', zIndex: 50,
-        background: 'rgba(8,6,4,0.92)',
+        background: 'rgba(9,9,14,0.92)',
         backdropFilter: 'blur(12px)',
-        borderTop: '1px solid rgba(201,151,58,0.15)',
+        borderTop: '1px solid rgba(0,167,250,0.15)',
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 5%',
       }}>
         <div className="flex flex-col">
-          <span style={{ fontFamily: 'Inter', fontSize: '12px', color: '#B8A882', marginBottom: '2px' }}>
+          <span style={{ fontFamily: 'Inter', fontSize: '12px', color: '#94A3B8', marginBottom: '2px' }}>
             {selectedAddOns.length} add-on{selectedAddOns.length !== 1 ? 's' : ''} selected
           </span>
-          <span style={{ fontFamily: 'Cormorant Garamond', fontSize: '28px', color: '#C9973A', lineHeight: 1 }}>
+          <span style={{ fontFamily: 'Cormorant Garamond', fontSize: '28px', color: '#00A7FA', lineHeight: 1 }}>
             ₹{totalPrice}
           </span>
         </div>
         <button 
           onClick={onNext}
-          className="hover:bg-[#E8B96A] transition-colors"
+          className="hover:bg-[#89D0FF] transition-colors"
           style={{
             padding: '14px 48px',
-            background: '#C9973A', color: '#080604',
+            background: '#00A7FA', color: '#09090E',
             fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
             letterSpacing: '0.2em', textTransform: 'uppercase',
             border: 'none', borderRadius: '2px', cursor: 'pointer',

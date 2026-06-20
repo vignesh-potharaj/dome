@@ -31,14 +31,14 @@ export default function CalendarPicker({ selectedDate, onSelectDate }: CalendarP
       
       {/* Calendar Header */}
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-display font-light text-[22px] text-[#F5EDD8]">
+        <h3 className="font-display font-light text-[22px] text-[#FFFFFF]">
           {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
         </h3>
         <div className="flex gap-4">
-          <button onClick={prevMonth} className="text-[#C9973A] hover:text-[#F5EDD8] transition-colors p-2">
+          <button onClick={prevMonth} className="text-[#00A7FA] hover:text-[#FFFFFF] transition-colors p-2">
             ←
           </button>
-          <button onClick={nextMonth} className="text-[#C9973A] hover:text-[#F5EDD8] transition-colors p-2">
+          <button onClick={nextMonth} className="text-[#00A7FA] hover:text-[#FFFFFF] transition-colors p-2">
             →
           </button>
         </div>
@@ -47,7 +47,7 @@ export default function CalendarPicker({ selectedDate, onSelectDate }: CalendarP
       {/* Days of Week */}
       <div className="grid grid-cols-7 gap-2 mb-4">
         {days.map(day => (
-          <div key={day} className="text-center font-sans font-light text-[11px] tracking-[0.2em] text-[#B8A882] uppercase">
+          <div key={day} className="text-center font-sans font-light text-[11px] tracking-[0.2em] text-[#94A3B8] uppercase">
             {day}
           </div>
         ))}
@@ -73,9 +73,9 @@ export default function CalendarPicker({ selectedDate, onSelectDate }: CalendarP
                 onClick={() => !isPast && onSelectDate(date)}
                 disabled={isPast}
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-sans font-normal text-[14px] transition-all
-                  ${isPast ? 'opacity-30 cursor-not-allowed text-[#B8A882]' : 'cursor-pointer hover:bg-[rgba(201,151,58,0.2)] text-[#F5EDD8]'}
-                  ${isToday && !isSelected ? 'border border-[#C9973A]' : ''}
-                  ${isSelected ? 'bg-[#C9973A] !text-[#080604] font-medium' : ''}
+                  ${isPast ? 'opacity-30 cursor-not-allowed text-[#94A3B8]' : 'cursor-pointer hover:bg-[rgba(0,167,250,0.2)] text-[#FFFFFF]'}
+                  ${isToday && !isSelected ? 'border border-[#00A7FA]' : ''}
+                  ${isSelected ? 'bg-[#00A7FA] !text-[#09090E] font-medium' : ''}
                 `}
               >
                 {i + 1}

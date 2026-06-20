@@ -157,10 +157,10 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
   return (
     <div className="flex flex-col items-center justify-start min-h-[100vh] w-full pt-[100px] px-6 pb-24 overflow-y-auto">
       
-      <h2 className="font-display font-light text-[32px] md:text-[52px] text-[#F5EDD8] text-center mb-3">
+      <h2 className="font-display font-light text-[32px] md:text-[52px] text-[#FFFFFF] text-center mb-3">
         ALMOST THERE
       </h2>
-      <p className="font-sans font-light text-[14px] text-[#B8A882] text-center mb-16">
+      <p className="font-sans font-light text-[14px] text-[#94A3B8] text-center mb-16">
         Tell us who's celebrating — we'll personalise everything
       </p>
 
@@ -178,7 +178,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
 
               return (
                 <div key={f.id} className={`flex flex-col ${isFullWidth ? 'md:col-span-2' : ''}`}>
-                  <label className="font-sans font-medium text-[11px] tracking-[0.2em] text-[#B8A882] uppercase mb-2">
+                  <label className="font-sans font-medium text-[11px] tracking-[0.2em] text-[#94A3B8] uppercase mb-2">
                     {f.label} {f.required && '*'}
                   </label>
                   
@@ -191,11 +191,11 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                           disabled={isPhoneVerified}
                           onChange={e => handleInputChange(f.id, e.target.value)}
                           placeholder={f.placeholder}
-                          className="w-full bg-[rgba(201,151,58,0.04)] border border-[rgba(201,151,58,0.2)] rounded-[2px] p-[14px_18px] text-[#F5EDD8] font-sans font-light text-[14px] outline-none transition-colors focus:border-[#C9973A] focus:bg-[rgba(201,151,58,0.07)] disabled:opacity-80"
+                          className="w-full bg-[rgba(0,167,250,0.04)] border border-[rgba(0,167,250,0.2)] rounded-[2px] p-[14px_18px] text-[#FFFFFF] font-sans font-light text-[14px] outline-none transition-colors focus:border-[#00A7FA] focus:bg-[rgba(0,167,250,0.07)] disabled:opacity-80"
                           style={{ borderColor: hasError ? '#8B3A3A' : undefined }}
                         />
                         {isPhoneVerified && (
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#C9973A] font-sans font-medium text-[11px] tracking-wide">
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#00A7FA] font-sans font-medium text-[11px] tracking-wide">
                             VERIFIED ✓
                           </span>
                         )}
@@ -206,7 +206,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                           type="button"
                           disabled={sendingOtp || value.trim().length < 10}
                           onClick={sendOtp}
-                          className="px-6 bg-[rgba(201,151,58,0.1)] hover:bg-[rgba(201,151,58,0.18)] border border-[rgba(201,151,58,0.3)] text-[#C9973A] font-sans font-medium text-[12px] uppercase tracking-wider rounded-[2px] transition-colors disabled:opacity-30 cursor-pointer whitespace-nowrap"
+                          className="px-6 bg-[rgba(0,167,250,0.1)] hover:bg-[rgba(0,167,250,0.18)] border border-[rgba(0,167,250,0.3)] text-[#00A7FA] font-sans font-medium text-[12px] uppercase tracking-wider rounded-[2px] transition-colors disabled:opacity-30 cursor-pointer whitespace-nowrap"
                         >
                           {sendingOtp ? 'Sending...' : 'Verify'}
                         </button>
@@ -217,14 +217,14 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                       value={value}
                       onChange={e => handleInputChange(f.id, e.target.value)}
                       placeholder={f.placeholder}
-                      className="w-full h-[100px] bg-[rgba(201,151,58,0.04)] border border-[rgba(201,151,58,0.2)] rounded-[2px] p-[14px_18px] text-[#F5EDD8] font-sans font-light text-[14px] outline-none transition-colors resize-none focus:border-[#C9973A] focus:bg-[rgba(201,151,58,0.07)]"
+                      className="w-full h-[100px] bg-[rgba(0,167,250,0.04)] border border-[rgba(0,167,250,0.2)] rounded-[2px] p-[14px_18px] text-[#FFFFFF] font-sans font-light text-[14px] outline-none transition-colors resize-none focus:border-[#00A7FA] focus:bg-[rgba(0,167,250,0.07)]"
                       style={{ borderColor: hasError ? '#8B3A3A' : undefined }}
                     />
                   ) : f.type === 'select' ? (
                     <select
                       value={value}
                       onChange={e => handleInputChange(f.id, e.target.value)}
-                      className="w-full bg-[rgba(201,151,58,0.04)] border border-[rgba(201,151,58,0.2)] rounded-[2px] p-[14px_18px] text-[#F5EDD8] font-sans font-light text-[14px] outline-none transition-colors focus:border-[#C9973A] focus:bg-[rgba(201,151,58,0.07)] appearance-none"
+                      className="w-full bg-[rgba(0,167,250,0.04)] border border-[rgba(0,167,250,0.2)] rounded-[2px] p-[14px_18px] text-[#FFFFFF] font-sans font-light text-[14px] outline-none transition-colors focus:border-[#00A7FA] focus:bg-[rgba(0,167,250,0.07)] appearance-none"
                       style={{ 
                         borderColor: hasError ? '#8B3A3A' : undefined,
                         backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="%23C9973A" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>')`,
@@ -232,9 +232,9 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                         backgroundPosition: 'right 12px center'
                       }}
                     >
-                      <option value="" disabled className="bg-[#080604]">Select...</option>
+                      <option value="" disabled className="bg-[#09090E]">Select...</option>
                       {f.options?.map(opt => (
-                        <option key={opt} value={opt} className="bg-[#080604]">{opt}</option>
+                        <option key={opt} value={opt} className="bg-[#09090E]">{opt}</option>
                       ))}
                     </select>
                   ) : (
@@ -243,7 +243,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                       value={value}
                       onChange={e => handleInputChange(f.id, e.target.value)}
                       placeholder={f.placeholder}
-                      className="w-full bg-[rgba(201,151,58,0.04)] border border-[rgba(201,151,58,0.2)] rounded-[2px] p-[14px_18px] text-[#F5EDD8] font-sans font-light text-[14px] outline-none transition-colors focus:border-[#C9973A] focus:bg-[rgba(201,151,58,0.07)]"
+                      className="w-full bg-[rgba(0,167,250,0.04)] border border-[rgba(0,167,250,0.2)] rounded-[2px] p-[14px_18px] text-[#FFFFFF] font-sans font-light text-[14px] outline-none transition-colors focus:border-[#00A7FA] focus:bg-[rgba(0,167,250,0.07)]"
                       style={{ borderColor: hasError ? '#8B3A3A' : undefined }}
                     />
                   )}
@@ -265,15 +265,15 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
             <div 
               className="p-6 border rounded-[2px] flex flex-col gap-4 transition-colors"
               style={{
-                borderColor: errors['ledName'] ? '#8B3A3A' : 'rgba(201,151,58,0.3)',
-                background: 'rgba(201,151,58,0.04)'
+                borderColor: errors['ledName'] ? '#8B3A3A' : 'rgba(0,167,250,0.3)',
+                background: 'rgba(0,167,250,0.04)'
               }}
             >
               <div>
-                <h4 className="font-sans font-medium text-[12px] tracking-[0.1em] text-[#C9973A] uppercase mb-1">
+                <h4 className="font-sans font-medium text-[12px] tracking-[0.1em] text-[#00A7FA] uppercase mb-1">
                   Custom LED Name Configuration
                 </h4>
-                <p className="font-sans font-light text-[12px] text-[#B8A882] leading-relaxed">
+                <p className="font-sans font-light text-[12px] text-[#94A3B8] leading-relaxed">
                   You have selected the Custom LED Name Sign add-on. Please specify the name or message you want lit up (₹49 per alphanumeric character):
                 </p>
               </div>
@@ -289,7 +289,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                     }
                   }}
                   placeholder="e.g. PRIYA"
-                  className="w-full bg-[rgba(8,6,4,0.7)] border border-[rgba(201,151,58,0.3)] rounded-[2px] p-3 text-[#F5EDD8] font-sans text-[13px] outline-none focus:border-[#C9973A]"
+                  className="w-full bg-[rgba(9,9,14,0.7)] border border-[rgba(0,167,250,0.3)] rounded-[2px] p-3 text-[#FFFFFF] font-sans text-[13px] outline-none focus:border-[#00A7FA]"
                   style={{ borderColor: errors['ledName'] ? '#8B3A3A' : undefined }}
                 />
                 {errors['ledName'] && (
@@ -297,11 +297,11 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                 )}
               </div>
 
-              <div className="flex justify-between items-center pt-2 border-t border-[rgba(201,151,58,0.15)]">
-                <span className="font-sans text-[12px] text-[#B8A882]">
+              <div className="flex justify-between items-center pt-2 border-t border-[rgba(0,167,250,0.15)]">
+                <span className="font-sans text-[12px] text-[#94A3B8]">
                   Dynamic Price Calculation ({ledLettersCount} letters):
                 </span>
-                <span className="font-display text-[18px] text-[#C9973A]">
+                <span className="font-display text-[18px] text-[#00A7FA]">
                   +₹{ledLettersCount * 49}
                 </span>
               </div>
@@ -314,12 +314,12 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
               style={{
                 width: '100%',
                 padding: '16px 0',
-                background: '#C9973A', color: '#080604',
+                background: '#00A7FA', color: '#09090E',
                 fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
                 letterSpacing: '0.2em', textTransform: 'uppercase',
                 border: 'none', borderRadius: '2px', cursor: 'pointer',
               }}
-              className="hover:bg-[#E8B96A] transition-colors"
+              className="hover:bg-[#89D0FF] transition-colors"
             >
               Review Booking →
             </button>
@@ -335,16 +335,16 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
 
       {/* OTP Verification Modal */}
       {isOtpModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#080604]/90 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#09090E]/90 backdrop-blur-sm p-4">
           <div 
-            className="w-full max-w-[420px] rounded-[4px] border border-[#C9973A]/30 bg-[#080604]/95 p-8 md:p-10 shadow-2xl relative"
-            style={{ boxShadow: '0 0 50px rgba(201,151,58,0.15)' }}
+            className="w-full max-w-[420px] rounded-[4px] border border-[#00A7FA]/30 bg-[#09090E]/95 p-8 md:p-10 shadow-2xl relative"
+            style={{ boxShadow: '0 0 50px rgba(0,167,250,0.15)' }}
           >
-            <h3 className="font-display font-light text-[24px] md:text-[28px] text-[#F5EDD8] text-center tracking-wide mb-2">
+            <h3 className="font-display font-light text-[24px] md:text-[28px] text-[#FFFFFF] text-center tracking-wide mb-2">
               VERIFY YOUR PHONE
             </h3>
-            <p className="font-sans font-light text-[12px] text-[#B8A882] text-center mb-8 leading-relaxed">
-              We have sent a 6-digit verification code to <span className="text-[#C9973A] font-medium">{booking.customer.phone}</span>. Please enter it below.
+            <p className="font-sans font-light text-[12px] text-[#94A3B8] text-center mb-8 leading-relaxed">
+              We have sent a 6-digit verification code to <span className="text-[#00A7FA] font-medium">{booking.customer.phone}</span>. Please enter it below.
             </p>
 
             <div className="flex flex-col gap-6 w-full">
@@ -359,7 +359,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                     if (otpError) setOtpError('');
                   }}
                   placeholder="0 0 0 0 0 0"
-                  className="w-full tracking-[0.5em] text-center bg-[rgba(201,151,58,0.04)] border border-[rgba(201,151,58,0.2)] rounded-[2px] p-[16px_0] text-[24px] font-display font-light text-[#F5EDD8] outline-none focus:border-[#C9973A] focus:bg-[rgba(201,151,58,0.07)]"
+                  className="w-full tracking-[0.5em] text-center bg-[rgba(0,167,250,0.04)] border border-[rgba(0,167,250,0.2)] rounded-[2px] p-[16px_0] text-[24px] font-display font-light text-[#FFFFFF] outline-none focus:border-[#00A7FA] focus:bg-[rgba(0,167,250,0.07)]"
                 />
                 
                 {otpError && (
@@ -371,7 +371,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                 <button
                   disabled={verifyingOtp}
                   onClick={verifyOtp}
-                  className="w-full py-4 bg-[#C9973A] hover:bg-[#E8B96A] text-[#080604] font-sans font-semibold text-[12px] tracking-[0.2em] uppercase rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full py-4 bg-[#00A7FA] hover:bg-[#89D0FF] text-[#09090E] font-sans font-semibold text-[12px] tracking-[0.2em] uppercase rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {verifyingOtp ? 'VERIFYING...' : 'VERIFY CODE'}
                 </button>
@@ -379,7 +379,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
                 <button
                   disabled={sendingOtp}
                   onClick={sendOtp}
-                  className="w-full py-2 bg-transparent text-[#B8A882] hover:text-[#C9973A] font-sans font-light text-[11px] tracking-[0.1em] uppercase transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full py-2 bg-transparent text-[#94A3B8] hover:text-[#00A7FA] font-sans font-light text-[11px] tracking-[0.1em] uppercase transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {sendingOtp ? 'SENDING...' : 'RESEND OTP'}
                 </button>
@@ -388,7 +388,7 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
 
             <button
               onClick={() => setIsOtpModalOpen(false)}
-              className="absolute top-4 right-4 text-[#B8A882] hover:text-[#C9973A] transition-colors bg-transparent border-none text-[16px] cursor-pointer"
+              className="absolute top-4 right-4 text-[#94A3B8] hover:text-[#00A7FA] transition-colors bg-transparent border-none text-[16px] cursor-pointer"
             >
               ✕
             </button>

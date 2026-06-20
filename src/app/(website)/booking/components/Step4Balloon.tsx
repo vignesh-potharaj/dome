@@ -3,12 +3,12 @@
 import { motion } from 'framer-motion';
 
 const balloonColors = [
-  { id: 'rose-gold',  label: 'Rose Gold',   colors: ['#B76E79', '#C9973A', '#E8C4B8'] },
+  { id: 'rose-gold',  label: 'Rose Gold',   colors: ['#B76E79', '#00A7FA', '#E8C4B8'] },
   { id: 'red-hearts', label: 'Classic Red', colors: ['#8B0000', '#CC0000', '#FF4444'] },
   { id: 'blush-pink', label: 'Blush Pink',  colors: ['#FFB6C1', '#FF69B4', '#FFC0CB'] },
-  { id: 'gold-white', label: 'Gold & White',colors: ['#C9973A', '#E8B96A', '#FFFFFF'] },
+  { id: 'gold-white', label: 'Gold & White',colors: ['#00A7FA', '#89D0FF', '#FFFFFF'] },
   { id: 'purple',     label: 'Royal Purple',colors: ['#4B0082', '#7B2FBE', '#9B59B6'] },
-  { id: 'custom',     label: 'Surprise Me', colors: ['#C9973A', '#080604', '#F5EDD8'] },
+  { id: 'custom',     label: 'Surprise Me', colors: ['#00A7FA', '#09090E', '#FFFFFF'] },
 ];
 
 interface Step4BalloonProps {
@@ -21,10 +21,10 @@ export default function Step4Balloon({ selectedColor, onUpdate, onNext }: Step4B
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[64px] px-6 pb-24">
       
-      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#F5EDD8] text-center mb-3">
+      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#FFFFFF] text-center mb-3">
         CHOOSE YOUR BALLOON PALETTE
       </h2>
-      <p className="font-sans font-light text-[14px] text-[#B8A882] text-center mb-16">
+      <p className="font-sans font-light text-[14px] text-[#94A3B8] text-center mb-16">
         Your dome will be decorated in your chosen colour theme
       </p>
 
@@ -50,12 +50,12 @@ export default function Step4Balloon({ selectedColor, onUpdate, onNext }: Step4B
                     ${palette.colors[1]} 33% 66%,
                     ${palette.colors[2]} 66% 100%
                   )`,
-                  outline: isSelected ? '3px solid #C9973A' : 'none',
+                  outline: isSelected ? '3px solid #00A7FA' : 'none',
                   outlineOffset: '4px',
                 }}
               />
               <span className={`font-sans font-light text-[12px] transition-colors
-                ${isSelected ? 'text-[#F5EDD8] font-medium' : 'text-[#B8A882]'}
+                ${isSelected ? 'text-[#FFFFFF] font-medium' : 'text-[#94A3B8]'}
               `}>
                 {palette.label}
               </span>
@@ -72,12 +72,12 @@ export default function Step4Balloon({ selectedColor, onUpdate, onNext }: Step4B
           style={{
             marginTop: '64px',
             padding: '14px 56px',
-            background: '#C9973A', color: '#080604',
+            background: '#00A7FA', color: '#09090E',
             fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
             letterSpacing: '0.2em', textTransform: 'uppercase',
             border: 'none', borderRadius: '2px', cursor: 'pointer',
           }}
-          className="hover:bg-[#E8B96A] transition-colors"
+          className="hover:bg-[#89D0FF] transition-colors"
         >
           Continue →
         </motion.button>

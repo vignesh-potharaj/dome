@@ -10,7 +10,7 @@ export default function ToggleSwitch({ value, onChange }: ToggleSwitchProps) {
     <div 
       onClick={() => onChange(!value)}
       className="w-12 h-6 rounded-full p-1 cursor-pointer transition-colors duration-300"
-      style={{ background: value ? '#C9973A' : 'rgba(201,151,58,0.2)' }}
+      style={{ background: value ? '#00A7FA' : 'rgba(0,167,250,0.2)' }}
     >
       <div 
         className="w-4 h-4 rounded-full bg-white transition-transform duration-300 shadow-sm"

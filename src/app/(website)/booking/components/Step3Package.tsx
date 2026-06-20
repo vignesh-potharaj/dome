@@ -232,21 +232,21 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
   const renderCellValue = (value: string | boolean) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <Check className="w-4 h-4 text-[#C9973A] mx-auto" />
+        <Check className="w-4 h-4 text-[#00A7FA] mx-auto" />
       ) : (
         <X className="w-4 h-4 text-gray-700 mx-auto" />
       );
     }
-    return <span className="font-sans text-[12px] text-[#F5EDD8]">{value}</span>;
+    return <span className="font-sans text-[12px] text-[#FFFFFF]">{value}</span>;
   };
 
   return (
     <div className="flex flex-col items-center justify-start min-h-[100vh] w-full pt-[80px] px-4 pb-24 overflow-y-auto">
       
-      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#F5EDD8] text-center mb-3 tracking-wide">
+      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#FFFFFF] text-center mb-3 tracking-wide">
         CHOOSE YOUR DOME PACKAGE
       </h2>
-      <p className="font-sans font-light text-[14px] text-[#B8A882] text-center mb-12 max-w-lg">
+      <p className="font-sans font-light text-[14px] text-[#94A3B8] text-center mb-12 max-w-lg">
         All packages include private dome access, custom balloon theme, and a complimentary cake.
       </p>
 
@@ -269,48 +269,48 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
                 onMouseLeave={() => handleMouseLeave(cardRef)}
                 style={{ 
                   transition: 'transform 0.15s ease, border 0.3s ease, box-shadow 0.3s ease, background 0.3s ease',
-                  border: isSelected ? '1px solid #C9973A' : isCenter ? '1px solid rgba(201,151,58,0.35)' : '1px solid rgba(201,151,58,0.18)',
-                  boxShadow: isSelected ? '0 0 25px rgba(201,151,58,0.15)' : isCenter ? '0 0 40px rgba(201,151,58,0.08)' : 'none',
-                  background: isSelected ? 'rgba(201,151,58,0.08)' : 'rgba(201,151,58,0.03)'
+                  border: isSelected ? '1px solid #00A7FA' : isCenter ? '1px solid rgba(0,167,250,0.35)' : '1px solid rgba(0,167,250,0.18)',
+                  boxShadow: isSelected ? '0 0 25px rgba(0,167,250,0.15)' : isCenter ? '0 0 40px rgba(0,167,250,0.08)' : 'none',
+                  background: isSelected ? 'rgba(0,167,250,0.08)' : 'rgba(0,167,250,0.03)'
                 }}
                 className="w-full relative flex flex-col flex-grow backdrop-blur-sm p-6 rounded-[2px]"
               >
                 {/* Selected Badge */}
                 {isSelected && (
-                  <div className="absolute top-3 right-3 text-[#080604] bg-[#C9973A] w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold z-20">
+                  <div className="absolute top-3 right-3 text-[#09090E] bg-[#00A7FA] w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold z-20">
                     ✓
                   </div>
                 )}
 
                 {pkg.tag && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#C9973A] text-[#080604] px-3 py-0.5 font-sans font-semibold text-[8px] tracking-[0.15em] uppercase z-20 whitespace-nowrap">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#00A7FA] text-[#09090E] px-3 py-0.5 font-sans font-semibold text-[8px] tracking-[0.15em] uppercase z-20 whitespace-nowrap">
                     {pkg.tag}
                   </div>
                 )}
                 
-                <p className="font-sans font-medium text-[11px] tracking-[0.2em] text-[#C9973A] mb-2 uppercase text-center mt-2">
+                <p className="font-sans font-medium text-[11px] tracking-[0.2em] text-[#00A7FA] mb-2 uppercase text-center mt-2">
                   {pkg.name}
                 </p>
                 <div className="text-center mb-1">
-                  <span className="font-display font-semibold text-[36px] text-[#C9973A] leading-none">
+                  <span className="font-display font-semibold text-[36px] text-[#00A7FA] leading-none">
                     ₹{pkg.price.toLocaleString()}
                   </span>
                 </div>
-                <p className="font-sans font-light text-[11px] text-[#B8A882] text-center mb-6 pb-6 border-b border-[rgba(201,151,58,0.15)]">
+                <p className="font-sans font-light text-[11px] text-[#94A3B8] text-center mb-6 pb-6 border-b border-[rgba(0,167,250,0.15)]">
                   for celebration
                 </p>
                 
                 <ul className="flex flex-col gap-3 flex-grow">
                   {pkg.features.slice(0, 5).map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <span className="text-[#C9973A] text-[8px] mt-1.5">✦</span>
-                      <span className="font-sans font-light text-[12px] text-[#B8A882] leading-snug">
+                      <span className="text-[#00A7FA] text-[8px] mt-1.5">✦</span>
+                      <span className="font-sans font-light text-[12px] text-[#94A3B8] leading-snug">
                         {feature}
                       </span>
                     </li>
                   ))}
                   {pkg.features.length > 5 && (
-                    <li className="font-sans font-light text-[11px] text-[#C9973A] italic mt-1">
+                    <li className="font-sans font-light text-[11px] text-[#00A7FA] italic mt-1">
                       + {pkg.features.length - 5} more features
                     </li>
                   )}
@@ -325,7 +325,7 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
       <div className="mb-12">
         <button
           onClick={() => setShowComparison(!showComparison)}
-          className="flex items-center gap-2 font-sans font-medium text-[12px] tracking-[0.15em] text-[#C9973A] uppercase hover:text-[#E8B96A] transition-colors border border-[rgba(201,151,58,0.3)] px-6 py-3 rounded-[2px] bg-[rgba(201,151,58,0.01)]"
+          className="flex items-center gap-2 font-sans font-medium text-[12px] tracking-[0.15em] text-[#00A7FA] uppercase hover:text-[#89D0FF] transition-colors border border-[rgba(0,167,250,0.3)] px-6 py-3 rounded-[2px] bg-[rgba(0,167,250,0.01)]"
         >
           {showComparison ? 'Hide Detailed Comparison' : 'Compare All Features'}
           {showComparison ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -342,11 +342,11 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             className="w-full max-w-7xl overflow-hidden mb-12"
           >
-            <div className="overflow-x-auto border border-[rgba(201,151,58,0.15)] rounded-[2px] bg-[rgba(8,6,4,0.4)] backdrop-blur-sm">
+            <div className="overflow-x-auto border border-[rgba(0,167,250,0.15)] rounded-[2px] bg-[rgba(9,9,14,0.4)] backdrop-blur-sm">
               <table className="w-full min-w-[900px] border-collapse text-center table-fixed">
                 <thead>
-                  <tr className="border-b border-[rgba(201,151,58,0.2)] bg-[rgba(201,151,58,0.01)]">
-                    <th className="p-4 text-left font-sans font-medium text-[11px] tracking-wider text-[#B8A882] uppercase w-1/4">
+                  <tr className="border-b border-[rgba(0,167,250,0.2)] bg-[rgba(0,167,250,0.01)]">
+                    <th className="p-4 text-left font-sans font-medium text-[11px] tracking-wider text-[#94A3B8] uppercase w-1/4">
                       Inclusions
                     </th>
                     {packagesList.map((pkg) => {
@@ -359,18 +359,18 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
                           onMouseLeave={() => setHoveredCol(null)}
                           onClick={() => onUpdate('package', pkg.id)}
                           className={`p-4 transition-colors duration-300 cursor-pointer relative w-[15%]
-                            ${isHovered ? 'bg-[rgba(201,151,58,0.06)]' : ''}
-                            ${isSelected ? 'bg-[rgba(201,151,58,0.03)]' : ''}
+                            ${isHovered ? 'bg-[rgba(0,167,250,0.06)]' : ''}
+                            ${isSelected ? 'bg-[rgba(0,167,250,0.03)]' : ''}
                           `}
                         >
-                          <h4 className="font-display font-medium text-[14px] text-[#F5EDD8] tracking-wider uppercase mb-1">
+                          <h4 className="font-display font-medium text-[14px] text-[#FFFFFF] tracking-wider uppercase mb-1">
                             {pkg.name.split(' ')[0]}
                           </h4>
-                          <div className="font-sans font-medium text-[13px] text-[#C9973A]">
+                          <div className="font-sans font-medium text-[13px] text-[#00A7FA]">
                             ₹{pkg.price.toLocaleString()}
                           </div>
                           {isSelected && (
-                            <span className="absolute top-2 right-2 text-[#C9973A] text-[10px] font-bold">✓</span>
+                            <span className="absolute top-2 right-2 text-[#00A7FA] text-[10px] font-bold">✓</span>
                           )}
                         </th>
                       );
@@ -382,9 +382,9 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
                   {featuresList.map((row) => (
                     <tr 
                       key={row.name} 
-                      className="border-b border-[rgba(201,151,58,0.08)] last:border-0 hover:bg-[rgba(255,255,255,0.01)] transition-colors"
+                      className="border-b border-[rgba(0,167,250,0.08)] last:border-0 hover:bg-[rgba(255,255,255,0.01)] transition-colors"
                     >
-                      <td className="p-3.5 text-left font-sans font-light text-[12px] text-[#B8A882] pl-6 bg-[rgba(201,151,58,0.01)]">
+                      <td className="p-3.5 text-left font-sans font-light text-[12px] text-[#94A3B8] pl-6 bg-[rgba(0,167,250,0.01)]">
                         {row.name}
                       </td>
                       {packagesList.map((pkg) => {
@@ -398,8 +398,8 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
                             onMouseLeave={() => setHoveredCol(null)}
                             onClick={() => onUpdate('package', pkg.id)}
                             className={`p-3.5 transition-colors duration-300 cursor-pointer
-                              ${isHovered ? 'bg-[rgba(201,151,58,0.05)]' : ''}
-                              ${isSelected ? 'bg-[rgba(201,151,58,0.02)]' : ''}
+                              ${isHovered ? 'bg-[rgba(0,167,250,0.05)]' : ''}
+                              ${isSelected ? 'bg-[rgba(0,167,250,0.02)]' : ''}
                             `}
                           >
                             {renderCellValue(val)}
@@ -424,12 +424,12 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
           style={{
             marginTop: '36px',
             padding: '14px 56px',
-            background: '#C9973A', color: '#080604',
+            background: '#00A7FA', color: '#09090E',
             fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
             letterSpacing: '0.2em', textTransform: 'uppercase',
             border: 'none', borderRadius: '2px', cursor: 'pointer',
           }}
-          className="hover:bg-[#E8B96A] transition-colors shadow-lg"
+          className="hover:bg-[#89D0FF] transition-colors shadow-lg"
         >
           Continue →
         </motion.button>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import ApeCanvas from '@/components/ApeCanvas';
+import InsideDome from '@/components/InsideDome';
 import FindUs from '@/components/FindUs';
 import ReviewsStrip from '@/components/ReviewsStrip';
 
@@ -490,7 +491,7 @@ export default function DomeHomepage() {
                     src="/images/anniversary.png"
                     alt="Anniversaries at Dome Cafe"
                     fill
-                    sizes="400px"
+                    sizes="(max-width: 768px) 600px, 1000px"
                     className="object-cover opacity-90"
                   />
                   {/* Backdrop Shadow overlay */}
@@ -508,6 +509,8 @@ export default function DomeHomepage() {
             </div>
           </div>
         </section>
+
+        <InsideDome />
 
         {/* Section 3: Packages Grid */}
         <section id="packages" className="relative py-24 px-6 md:px-12 max-w-7xl mx-auto border-t border-white/5">

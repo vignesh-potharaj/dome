@@ -108,7 +108,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="relative min-h-[100vh] w-full bg-[#080604] overflow-hidden selection:bg-[#C9973A] selection:text-[#080604]">
+    <div className="relative min-h-[100vh] w-full bg-[#09090E] overflow-hidden selection:bg-[#00A7FA] selection:text-[#09090E]">
       <ProgressBar currentStep={step} />
 
       <AnimatePresence mode="wait">
@@ -124,7 +124,7 @@ export default function BookingPage() {
           {step > 1 && step < 8 && (
             <button 
               onClick={back}
-              className="absolute top-[88px] left-6 md:left-12 text-[#B8A882] font-sans text-[12px] uppercase tracking-[0.1em] hover:text-[#C9973A] transition-colors z-50 flex items-center gap-2"
+              className="absolute top-[88px] left-6 md:left-12 text-[#94A3B8] font-sans text-[12px] uppercase tracking-[0.1em] hover:text-[#00A7FA] transition-colors z-50 flex items-center gap-2"
             >
               <span>←</span> Back
             </button>

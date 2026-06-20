@@ -59,7 +59,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[64px] px-6 pb-24">
       
-      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#F5EDD8] text-center mb-16">
+      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#FFFFFF] text-center mb-16">
         PICK YOUR DATE & TIME
       </h2>
 
@@ -90,10 +90,10 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
                   disabled={isSlotDisabled}
                   onClick={() => onUpdate('slot', slot)}
                   className={`relative flex flex-col items-center justify-center h-[56px] w-full border rounded-[2px] transition-all duration-200
-                    ${(!selectedDate || loading) ? 'opacity-30 cursor-not-allowed border-[rgba(201,151,58,0.2)]' : ''}
+                    ${(!selectedDate || loading) ? 'opacity-30 cursor-not-allowed border-[rgba(0,167,250,0.2)]' : ''}
                     ${isBlocked && selectedDate && !loading ? 'bg-[rgba(255,255,255,0.03)] border-transparent cursor-not-allowed' : ''}
-                    ${!isBlocked && !isSelected && selectedDate && !loading ? 'border-[rgba(201,151,58,0.2)] hover:border-[#C9973A] bg-transparent text-[#B8A882]' : ''}
-                    ${isSelected ? 'border-[#C9973A] bg-[rgba(201,151,58,0.12)] text-[#F5EDD8]' : ''}
+                    ${!isBlocked && !isSelected && selectedDate && !loading ? 'border-[rgba(0,167,250,0.2)] hover:border-[#00A7FA] bg-transparent text-[#94A3B8]' : ''}
+                    ${isSelected ? 'border-[#00A7FA] bg-[rgba(0,167,250,0.12)] text-[#FFFFFF]' : ''}
                   `}
                 >
                   <span className={`font-sans text-[14px] ${isBlocked ? 'text-[rgba(184,168,130,0.3)] line-through' : ''}`}>
@@ -109,7 +109,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
             })}
           </div>
 
-          <p className="font-sans font-light italic text-[12px] text-[#B8A882] mt-8 text-center md:text-left w-full">
+          <p className="font-sans font-light italic text-[12px] text-[#94A3B8] mt-8 text-center md:text-left w-full">
             Each dome session is 1.5 hours · Please arrive 10 mins early
           </p>
         </div>
@@ -124,12 +124,12 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
           style={{
             marginTop: '56px',
             padding: '14px 56px',
-            background: '#C9973A', color: '#080604',
+            background: '#00A7FA', color: '#09090E',
             fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
             letterSpacing: '0.2em', textTransform: 'uppercase',
             border: 'none', borderRadius: '2px', cursor: 'pointer',
           }}
-          className="hover:bg-[#E8B96A] transition-colors"
+          className="hover:bg-[#89D0FF] transition-colors"
         >
           Continue →
         </motion.button>
