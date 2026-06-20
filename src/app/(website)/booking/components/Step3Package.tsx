@@ -322,15 +322,17 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
       </div>
 
       {/* Toggle Comparison Table */}
-      <div className="mb-12">
-        <button
-          onClick={() => setShowComparison(!showComparison)}
-          className="flex items-center gap-2 font-sans font-medium text-[12px] tracking-[0.15em] text-[#00A7FA] uppercase hover:text-[#89D0FF] transition-colors border border-[rgba(0,167,250,0.3)] px-6 py-3 rounded-[2px] bg-[rgba(0,167,250,0.01)]"
-        >
-          {showComparison ? 'Hide Detailed Comparison' : 'Compare All Features'}
-          {showComparison ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
-      </div>
+      {!showComparison && (
+        <div className="mb-12">
+          <button
+            onClick={() => setShowComparison(!showComparison)}
+            className="flex items-center gap-2 font-sans font-medium text-[12px] tracking-[0.15em] text-[#00A7FA] uppercase hover:text-[#89D0FF] transition-colors border border-[rgba(0,167,250,0.3)] px-6 py-3 rounded-[2px] bg-[rgba(0,167,250,0.01)]"
+          >
+            Compare All Features
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Hostinger-style Comparison Table */}
       <AnimatePresence>
@@ -415,8 +417,8 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
         )}
       </AnimatePresence>
 
-      {/* Next Action */}
-      {selectedPackage && (
+      {/* Next Action (when comparison is NOT open) */}
+      {!showComparison && selectedPackage && (
         <motion.button
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -433,6 +435,36 @@ export default function Step3Package({ selectedPackage, onUpdate, onNext }: Step
         >
           Continue →
         </motion.button>
+      )}
+
+      {/* Floating Action Buttons when comparison is open */}
+      {showComparison && (
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50 items-end">
+          {selectedPackage && (
+            <motion.button
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={onNext}
+              style={{
+                padding: '14px 40px',
+                background: '#00A7FA', color: '#09090E',
+                fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
+                letterSpacing: '0.2em', textTransform: 'uppercase',
+                border: 'none', borderRadius: '2px', cursor: 'pointer',
+              }}
+              className="hover:bg-[#89D0FF] transition-colors shadow-lg"
+            >
+              Continue →
+            </motion.button>
+          )}
+          <button
+            onClick={() => setShowComparison(false)}
+            className="flex items-center gap-2 font-sans font-medium text-[12px] tracking-[0.15em] text-[#00A7FA] uppercase hover:text-[#89D0FF] transition-colors border border-[rgba(0,167,250,0.3)] px-6 py-3 rounded-[2px] bg-[#09090E]/90 backdrop-blur-md shadow-[0_0_20px_rgba(0,167,250,0.15)]"
+          >
+            Hide Detailed Comparison
+            <ChevronUp className="w-4 h-4" />
+          </button>
+        </div>
       )}
 
     </div>
