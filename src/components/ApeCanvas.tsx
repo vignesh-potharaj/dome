@@ -28,7 +28,9 @@ export default function ApeCanvas() {
     // Particle settings
     const particleCount = 180;
     const particles: Particle[] = [];
-    const sphereRadius = Math.min(width, height) * 0.35;
+    const isMobile = width < 768;
+    const sphereRadius = Math.min(width, height) * (isMobile ? 0.245 : 0.35);
+    const connectionThreshold = isMobile ? 60 : 85;
     const fov = 400;
 
     // Generate random particles distributed on a dome (hemisphere) surface
@@ -173,8 +175,8 @@ export default function ApeCanvas() {
           const dist = Math.hypot(p1.sx - p2.sx, p1.sy - p2.sy);
 
           // Connection threshold
-          if (dist < 85) {
-            const opacity = (1 - dist / 85) * 0.12 * (fov / (fov + (p1.z + p2.z) / 2));
+          if (dist < connectionThreshold) {
+            const opacity = (1 - dist / connectionThreshold) * 0.12 * (fov / (fov + (p1.z + p2.z) / 2));
             ctx.strokeStyle = `rgba(137, 208, 255, ${opacity})`;
             ctx.beginPath();
             ctx.moveTo(p1.sx, p1.sy);
