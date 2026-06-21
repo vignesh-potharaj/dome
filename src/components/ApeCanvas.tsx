@@ -29,8 +29,8 @@ export default function ApeCanvas() {
     const particleCount = 180;
     const particles: Particle[] = [];
     const isMobile = width < 768;
-    const sphereRadius = Math.min(width, height) * (isMobile ? 0.245 : 0.35);
-    const connectionThreshold = isMobile ? 60 : 85;
+    const sphereRadius = Math.min(width, height) * (isMobile ? 0.32 : 0.35);
+    const connectionThreshold = isMobile ? 78 : 85;
     const fov = 400;
 
     // Generate random particles distributed on a dome (hemisphere) surface
