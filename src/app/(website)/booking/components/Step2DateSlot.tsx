@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import CalendarPicker from './CalendarPicker';
+import DomeLoader from './DomeLoader';
 
 const allSlots = [
   '5:00 PM – 6:30 PM',
@@ -77,41 +78,65 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
         </div>
 
         {/* Right Panel: Time Slots */}
-        <div className="w-full md:w-[60%] flex flex-col items-center md:items-start">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-            {allSlots.map((slot) => {
-              const isBlocked = unavailableSlots.includes(slot);
-              const isSelected = selectedSlot === slot;
-              const isSlotDisabled = isBlocked || !selectedDate || loading;
+        <div className="w-full md:w-[60%] flex flex-col items-stretch md:items-start min-h-[220px]">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loader"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="w-full"
+              >
+                <DomeLoader />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="slots"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="w-full flex flex-col items-center md:items-start"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                  {allSlots.map((slot) => {
+                    const isBlocked = unavailableSlots.includes(slot);
+                    const isSelected = selectedSlot === slot;
+                    const isSlotDisabled = isBlocked || !selectedDate;
 
-              return (
-                <button
-                  key={slot}
-                  disabled={isSlotDisabled}
-                  onClick={() => onUpdate('slot', slot)}
-                  className={`relative flex flex-col items-center justify-center h-[56px] w-full border rounded-[2px] transition-all duration-200
-                    ${(!selectedDate || loading) ? 'opacity-30 cursor-not-allowed border-[rgba(0,167,250,0.2)]' : ''}
-                    ${isBlocked && selectedDate && !loading ? 'bg-[rgba(255,255,255,0.03)] border-transparent cursor-not-allowed' : ''}
-                    ${!isBlocked && !isSelected && selectedDate && !loading ? 'border-[rgba(0,167,250,0.2)] hover:border-[#00A7FA] bg-transparent text-[#94A3B8]' : ''}
-                    ${isSelected ? 'border-[#00A7FA] bg-[rgba(0,167,250,0.12)] text-[#FFFFFF]' : ''}
-                  `}
-                >
-                  <span className={`font-sans text-[14px] ${isBlocked ? 'text-[rgba(184,168,130,0.3)] line-through' : ''}`}>
-                    {slot}
-                  </span>
-                  {isBlocked && selectedDate && !loading && (
-                    <span className="font-sans font-medium text-[9px] tracking-[0.2em] text-[#8B3A3A] mt-1 absolute bottom-1">
-                      BOOKED
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    return (
+                      <button
+                        key={slot}
+                        disabled={isSlotDisabled}
+                        onClick={() => onUpdate('slot', slot)}
+                        className={`relative flex flex-col items-center justify-center h-[56px] w-full border rounded-[2px] transition-all duration-200
+                          ${!selectedDate ? 'opacity-30 cursor-not-allowed border-[rgba(0,167,250,0.2)]' : ''}
+                          ${isBlocked && selectedDate ? 'bg-[rgba(255,255,255,0.03)] border-transparent cursor-not-allowed' : ''}
+                          ${!isBlocked && !isSelected && selectedDate ? 'border-[rgba(0,167,250,0.2)] hover:border-[#00A7FA] bg-transparent text-[#94A3B8]' : ''}
+                          ${isSelected ? 'border-[#00A7FA] bg-[rgba(0,167,250,0.12)] text-[#FFFFFF]' : ''}
+                        `}
+                      >
+                        <span className={`font-sans text-[14px] ${isBlocked ? 'text-[rgba(184,168,130,0.3)] line-through' : ''}`}>
+                          {slot}
+                        </span>
+                        {isBlocked && selectedDate && (
+                          <span className="font-sans font-medium text-[9px] tracking-[0.2em] text-[#8B3A3A] mt-1 absolute bottom-1">
+                            BOOKED
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
-          <p className="font-sans font-light italic text-[12px] text-[#94A3B8] mt-8 text-center md:text-left w-full">
-            Each dome session is 1.5 hours · Please arrive 10 mins early
-          </p>
+                <p className="font-sans font-light italic text-[12px] text-[#94A3B8] mt-8 text-center md:text-left w-full">
+                  Each dome session is 1.5 hours · Please arrive 10 mins early
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       </div>
