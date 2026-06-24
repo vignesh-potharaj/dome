@@ -72,9 +72,8 @@ export default function CalendarPicker({ selectedDate, onSelectDate }: CalendarP
               <button
                 onClick={() => !isPast && onSelectDate(date)}
                 disabled={isPast}
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-sans font-normal text-[14px] transition-all
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-sans font-normal text-[14px] transition-all focus:outline-none
                   ${isPast ? 'opacity-30 cursor-not-allowed text-[#94A3B8]' : 'cursor-pointer hover:bg-[rgba(0,167,250,0.2)] text-[#FFFFFF]'}
-                  ${isToday && !isSelected ? 'border border-[#00A7FA]' : ''}
                   ${isSelected ? 'bg-[#00A7FA] !text-[#09090E] font-medium' : ''}
                 `}
               >

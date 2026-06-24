@@ -90,7 +90,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
               >
                 <DomeLoader />
               </motion.div>
-            ) : (
+            ) : selectedDate ? (
               <motion.div
                 key="slots"
                 initial={{ opacity: 0, y: 10 }}
@@ -104,7 +104,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
                     const slotInfo = slotsAvailability[slot];
                     const isBlocked = slotInfo ? !slotInfo.available : false;
                     const isSelected = selectedSlot === slot;
-                    const isSlotDisabled = isBlocked || !selectedDate;
+                    const isSlotDisabled = isBlocked;
                     const isPast = slotInfo?.reason === 'Slot is in the past';
 
                     return (
@@ -112,17 +112,16 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
                         key={slot}
                         disabled={isSlotDisabled}
                         onClick={() => onUpdate('slot', slot)}
-                        className={`relative flex flex-col items-center justify-center h-[56px] w-full border rounded-[2px] transition-all duration-200
-                          ${!selectedDate ? 'opacity-30 cursor-not-allowed border-[rgba(0,167,250,0.2)]' : ''}
-                          ${isBlocked && selectedDate ? 'bg-[rgba(255,255,255,0.03)] border-transparent cursor-not-allowed' : ''}
-                          ${!isBlocked && !isSelected && selectedDate ? 'border-[rgba(0,167,250,0.2)] hover:border-[#00A7FA] bg-transparent text-[#94A3B8]' : ''}
+                        className={`relative flex flex-col items-center justify-center h-[56px] w-full border rounded-[2px] transition-all duration-200 focus:outline-none
+                          ${isBlocked ? 'bg-[rgba(255,255,255,0.03)] border-transparent cursor-not-allowed' : ''}
+                          ${!isBlocked && !isSelected ? 'border-[rgba(0,167,250,0.2)] hover:border-[#00A7FA] bg-transparent text-[#94A3B8]' : ''}
                           ${isSelected ? 'border-[#00A7FA] bg-[rgba(0,167,250,0.12)] text-[#FFFFFF]' : ''}
                         `}
                       >
                         <span className={`font-sans text-[14px] ${isBlocked ? 'text-[rgba(184,168,130,0.3)] line-through' : ''}`}>
                           {slot}
                         </span>
-                        {isBlocked && selectedDate && (
+                        {isBlocked && (
                           <span className="font-sans font-medium text-[9px] tracking-[0.2em] text-[#8B3A3A] mt-1 absolute bottom-1">
                             {isPast ? 'UNAVAILABLE' : 'BOOKED'}
                           </span>
@@ -134,6 +133,18 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
 
                 <p className="font-sans font-light italic text-[12px] text-[#94A3B8] mt-8 text-center md:text-left w-full">
                   Each dome session is 1.5 hours · Please arrive 10 mins early
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="select-date-prompt"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="w-full flex justify-center md:justify-start items-center min-h-[150px] text-center md:text-left"
+              >
+                <p className="font-sans font-light italic text-[14px] text-[#94A3B8]">
+                  Select a date to view available time slots.
                 </p>
               </motion.div>
             )}
