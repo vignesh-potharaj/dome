@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 
 interface Customer {
@@ -46,6 +47,7 @@ interface Booking {
 const API_URL = process.env.API_URL || 'http://localhost:3000/api';
 
 const AppointmentManager: React.FC = () => {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [bookingsList, setBookingsList] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -71,6 +73,7 @@ const AppointmentManager: React.FC = () => {
 
   useEffect(() => {
     fetchBookings();
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -560,110 +563,115 @@ const AppointmentManager: React.FC = () => {
         )}
       </div>
 
-      {/* Reschedule Modal */}
-      {showRescheduleModal && selectedBooking && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>Reschedule Reservation: {selectedBooking.id}</h3>
-              <button onClick={() => setShowRescheduleModal(false)} className="modal-close">X</button>
+      {mounted && typeof window !== 'undefined' && createPortal(
+        <>
+          {/* Reschedule Modal */}
+          {showRescheduleModal && selectedBooking && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h3>Reschedule Reservation: {selectedBooking.id}</h3>
+                  <button onClick={() => setShowRescheduleModal(false)} className="modal-close">X</button>
+                </div>
+                <form onSubmit={handleRescheduleSubmit}>
+                  <div className="form-group">
+                    <label htmlFor="newDate">Select New Date</label>
+                    <input
+                      type="date"
+                      id="newDate"
+                      className="form-control"
+                      value={newDate}
+                      onChange={(e) => setNewDate(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="newSlot">Select New Slot</label>
+                    <select
+                      id="newSlot"
+                      className="form-control"
+                      value={newSlot}
+                      onChange={(e) => setNewSlot(e.target.value)}
+                      required
+                    >
+                      <option value="5:00 PM – 6:30 PM">Slot 1 (5:00 PM – 6:30 PM)</option>
+                      <option value="7:00 PM – 8:30 PM">Slot 2 (7:00 PM – 8:30 PM)</option>
+                      <option value="9:00 PM – 10:30 PM">Slot 3 (9:00 PM – 10:30 PM)</option>
+                      <option value="11:00 PM – 12:30 AM">Slot 4 (11:00 PM – 12:30 AM)</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <button type="button" onClick={() => setShowRescheduleModal(false)} className="btn btn-secondary">Cancel</button>
+                    <button type="submit" className="btn btn-primary">Reschedule</button>
+                  </div>
+                </form>
+              </div>
             </div>
-            <form onSubmit={handleRescheduleSubmit}>
-              <div className="form-group">
-                <label htmlFor="newDate">Select New Date</label>
-                <input
-                  type="date"
-                  id="newDate"
-                  className="form-control"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  required
-                />
-              </div>
+          )}
 
-              <div className="form-group">
-                <label htmlFor="newSlot">Select New Slot</label>
-                <select
-                  id="newSlot"
-                  className="form-control"
-                  value={newSlot}
-                  onChange={(e) => setNewSlot(e.target.value)}
-                  required
-                >
-                  <option value="5:00 PM – 6:30 PM">Slot 1 (5:00 PM – 6:30 PM)</option>
-                  <option value="7:00 PM – 8:30 PM">Slot 2 (7:00 PM – 8:30 PM)</option>
-                  <option value="9:00 PM – 10:30 PM">Slot 3 (9:00 PM – 10:30 PM)</option>
-                  <option value="11:00 PM – 12:30 AM">Slot 4 (11:00 PM – 12:30 AM)</option>
-                </select>
-              </div>
+          {/* Edit Details (Cake & Palette) Modal */}
+          {showEditDetailsModal && selectedBooking && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h3>Edit Experience Customizations: {selectedBooking.id}</h3>
+                  <button onClick={() => setShowEditDetailsModal(false)} className="modal-close">X</button>
+                </div>
+                <form onSubmit={handleEditDetailsSubmit}>
+                  <div className="form-group">
+                    <label htmlFor="editCake">Cake Flavor</label>
+                    <select
+                      id="editCake"
+                      className="form-control"
+                      value={editCake}
+                      onChange={(e) => setEditCake(e.target.value)}
+                    >
+                      <option value="none">Complimentary Compliment</option>
+                      <option value="chocolate">Chocolate</option>
+                      <option value="black-forest">Black Forest</option>
+                      <option value="white-forest">White Forest</option>
+                      <option value="butterscotch">Butterscotch</option>
+                      <option value="red-velvet">Red Velvet (+₹250)</option>
+                      <option value="chocolate-truffle">Chocolate Truffle (+₹250)</option>
+                    </select>
+                  </div>
 
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <button type="button" onClick={() => setShowRescheduleModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Reschedule</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                  <div className="form-group">
+                    <label htmlFor="editCakeMsg">Message on Cake</label>
+                    <input
+                      type="text"
+                      id="editCakeMsg"
+                      className="form-control"
+                      value={editCakeMsg}
+                      onChange={(e) => setEditCakeMsg(e.target.value)}
+                      placeholder="e.g. Happy Birthday John!"
+                    />
+                  </div>
 
-      {/* Edit Details (Cake & Palette) Modal */}
-      {showEditDetailsModal && selectedBooking && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>Edit Experience Customizations: {selectedBooking.id}</h3>
-              <button onClick={() => setShowEditDetailsModal(false)} className="modal-close">X</button>
+                  <div className="form-group">
+                    <label htmlFor="editBalloon">Balloon Palette</label>
+                    <input
+                      type="text"
+                      id="editBalloon"
+                      className="form-control"
+                      value={editBalloon}
+                      onChange={(e) => setEditBalloon(e.target.value)}
+                      placeholder="e.g. Rose Gold & White, Pastel Blue"
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <button type="button" onClick={() => setShowEditDetailsModal(false)} className="btn btn-secondary">Cancel</button>
+                    <button type="submit" className="btn btn-primary">Save Changes</button>
+                  </div>
+                </form>
+              </div>
             </div>
-            <form onSubmit={handleEditDetailsSubmit}>
-              <div className="form-group">
-                <label htmlFor="editCake">Cake Flavor</label>
-                <select
-                  id="editCake"
-                  className="form-control"
-                  value={editCake}
-                  onChange={(e) => setEditCake(e.target.value)}
-                >
-                  <option value="none">Complimentary Compliment</option>
-                  <option value="chocolate">Chocolate</option>
-                  <option value="black-forest">Black Forest</option>
-                  <option value="white-forest">White Forest</option>
-                  <option value="butterscotch">Butterscotch</option>
-                  <option value="red-velvet">Red Velvet (+₹250)</option>
-                  <option value="chocolate-truffle">Chocolate Truffle (+₹250)</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="editCakeMsg">Message on Cake</label>
-                <input
-                  type="text"
-                  id="editCakeMsg"
-                  className="form-control"
-                  value={editCakeMsg}
-                  onChange={(e) => setEditCakeMsg(e.target.value)}
-                  placeholder="e.g. Happy Birthday John!"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="editBalloon">Balloon Palette</label>
-                <input
-                  type="text"
-                  id="editBalloon"
-                  className="form-control"
-                  value={editBalloon}
-                  onChange={(e) => setEditBalloon(e.target.value)}
-                  placeholder="e.g. Rose Gold & White, Pastel Blue"
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <button type="button" onClick={() => setShowEditDetailsModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
+          )}
+        </>,
+        document.body
       )}
     </div>
   );

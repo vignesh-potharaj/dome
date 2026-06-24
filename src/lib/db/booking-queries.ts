@@ -132,7 +132,7 @@ export async function checkSlotAvailability(tx: any, branchId: string, dateStr: 
         eq(bookings.branchId, branchId),
         eq(bookings.date, dateStr),
         eq(bookings.slot, slot),
-        sql`status IN ('confirmed', 'pending_payment')` // include both pending (temporary lock) and confirmed
+        sql`status IN ('confirmed', 'pending_payment', 'rescheduled')` // include pending, confirmed, and rescheduled bookings
       )
     );
 

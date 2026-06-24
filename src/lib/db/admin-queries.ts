@@ -1,7 +1,7 @@
 import { eq, and, sql, desc, inArray } from 'drizzle-orm';
 import { db } from './index';
 import { bookings, bookingLogs, blockedDates, branches, customers, communicationLogs } from './schema';
-import { generateBookingId } from './booking-queries';
+import { generateBookingId, checkSlotAvailability } from './booking-queries';
 
 // Helper to set RLS session variables inside a transaction block
 async function setRlsContext(tx: any, role: string, branchId: string | null) {
@@ -66,6 +66,32 @@ export async function updateBookingByAdmin(
     }
 
     const current = existingList[0];
+    
+    // Validate slot availability if rescheduling (date or slot changes) or activating from cancelled
+    const currentDateStr = (current.date as any) instanceof Date
+      ? (current.date as any).toISOString().split('T')[0]
+      : String(current.date).split('T')[0];
+
+    const isActiveStatus = (status: string) => ['confirmed', 'pending_payment', 'rescheduled'].includes(status);
+
+    const isRescheduling =
+      (updates.date !== undefined && updates.date !== currentDateStr) ||
+      (updates.slot !== undefined && updates.slot !== current.slot);
+
+    const isActivating =
+      updates.status !== undefined &&
+      isActiveStatus(updates.status) &&
+      current.status === 'cancelled';
+
+    if (isRescheduling || isActivating) {
+      const targetDate = updates.date !== undefined ? updates.date : currentDateStr;
+      const targetSlot = updates.slot !== undefined ? updates.slot : current.slot;
+      const availability = await checkSlotAvailability(tx, current.branchId, targetDate, targetSlot);
+      if (!availability.available) {
+        throw new Error(`Cannot reschedule: ${availability.reason || 'Slot is unavailable'}`);
+      }
+    }
+
     const diff: Record<string, { old: any; new: any }> = {};
     const setValues: Record<string, any> = {};
 
