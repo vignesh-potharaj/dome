@@ -24,10 +24,17 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
     setIsCreatingPending(true);
     setError('');
     try {
+      const formattedBooking = {
+        ...booking,
+        date: booking.date instanceof Date 
+          ? `${booking.date.getFullYear()}-${String(booking.date.getMonth() + 1).padStart(2, '0')}-${String(booking.date.getDate()).padStart(2, '0')}`
+          : booking.date
+      };
+
       const response = await fetch('/api/booking/create-pending', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ booking }),
+        body: JSON.stringify({ booking: formattedBooking }),
       });
       const data = await response.json();
       if (!data.success) {

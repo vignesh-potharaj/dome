@@ -1,6 +1,7 @@
 import { eq, and, sql, desc, inArray } from 'drizzle-orm';
 import { db } from './index';
 import { bookings, bookingLogs, blockedDates, branches, customers, communicationLogs } from './schema';
+import { generateBookingId } from './booking-queries';
 
 // Helper to set RLS session variables inside a transaction block
 async function setRlsContext(tx: any, role: string, branchId: string | null) {
@@ -334,3 +335,96 @@ export async function cronTriggerCrmReminders() {
     return { success: true, processedCount: matches.length, logs: logEntries };
   });
 }
+
+// 9. Block a Specific Time Slot (by creating a placeholder block booking)
+export async function blockSlot(
+  adminId: string,
+  role: string,
+  branchId: string | null,
+  dateStr: string,
+  slot: string,
+  reason: string
+) {
+  return await db.transaction(async (tx) => {
+    await setRlsContext(tx, role, branchId);
+
+    // If branch admin, force the branch_id to be their own branch
+    const targetBranch = role === 'super_admin' ? (branchId || 'kokapet') : (branchId as string);
+
+    // Find or create 'Admin Block' customer
+    let customer = await tx.query.customers.findFirst({
+      where: (customers: any, { eq }: any) => eq(customers.phone, '0000000000')
+    });
+
+    if (!customer) {
+      const [inserted] = await tx.insert(customers)
+        .values({
+          name: 'Admin Block',
+          phone: '0000000000',
+          marketingConsent: false
+        })
+        .returning();
+      customer = inserted;
+    }
+
+    const bookingId = generateBookingId(targetBranch);
+    const [blocked] = await tx.insert(bookings)
+      .values({
+        id: bookingId,
+        branchId: targetBranch,
+        customerId: customer.id,
+        date: dateStr,
+        slot,
+        packageName: 'Block',
+        balloonColor: null,
+        cakeOption: null,
+        sparklers: false,
+        ledName: null,
+        messageOnCake: reason || 'Blocked by Admin',
+        addOns: [],
+        celebrantName: null,
+        specialNote: null,
+        guestCount: 0,
+        status: 'confirmed',
+        totalPrice: 0,
+        advancePaid: 0,
+      })
+      .returning();
+
+    // Log the action
+    await tx.insert(bookingLogs)
+      .values({
+        bookingId: blocked.id,
+        adminId,
+        action: 'slot_blocked',
+        details: { date: dateStr, slot, reason }
+      });
+
+    return blocked;
+  });
+}
+
+// 10. Unblock a Specific Time Slot (by deleting the placeholder block booking)
+export async function unblockSlot(
+  role: string,
+  branchId: string | null,
+  bookingId: string
+) {
+  return await db.transaction(async (tx) => {
+    await setRlsContext(tx, role, branchId);
+
+    // Verify booking is indeed a Block booking
+    const existing = await tx.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+    if (existing.length === 0) {
+      throw new Error(`Booking record ${bookingId} not found or access denied.`);
+    }
+
+    if (existing[0].packageName !== 'Block') {
+      throw new Error('Only Admin Block bookings can be deleted using unblock.');
+    }
+
+    await tx.delete(bookings).where(eq(bookings.id, bookingId));
+    return { success: true };
+  });
+}
+

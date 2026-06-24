@@ -65,8 +65,43 @@ export function calculateTotalPrice(data: {
   return packagePrice + cakePrice + sparklerPrice + addOnsTotal;
 }
 
+// Helper to check if a booking slot is in the past (using Asia/Kolkata timezone - IST)
+export function isSlotInPast(dateStr: string, slotStr: string): boolean {
+  const now = new Date();
+
+  // Parse slot start time (e.g., '5:00 PM' from '5:00 PM – 6:30 PM')
+  // Split on either en-dash (–) or regular hyphen (-)
+  const timePart = slotStr.split(/[–-]/)[0].trim();
+  
+  const match = timePart.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+  if (!match) {
+    return false;
+  }
+
+  let hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  const ampm = match[3].toUpperCase();
+
+  if (ampm === 'PM' && hour < 12) {
+    hour += 12;
+  } else if (ampm === 'AM' && hour === 12) {
+    hour = 0;
+  }
+
+  // Construct ISO string in Asia/Kolkata timezone offset (+05:30)
+  const isoStr = `${dateStr}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+05:30`;
+  const slotStartTime = new Date(isoStr);
+
+  return now.getTime() > slotStartTime.getTime();
+}
+
 // Check if a slot is blocked or fully booked
 export async function checkSlotAvailability(tx: any, branchId: string, dateStr: string, slot: string) {
+  // Check if slot is in the past
+  if (isSlotInPast(dateStr, slot)) {
+    return { available: false, reason: 'Slot is in the past' };
+  }
+
   // Check if the date is in blockedDates
   const blocked = await tx.select()
     .from(blockedDates)
@@ -100,6 +135,12 @@ export async function checkSlotAvailability(tx: any, branchId: string, dateStr: 
         sql`status IN ('confirmed', 'pending_payment')` // include both pending (temporary lock) and confirmed
       )
     );
+
+  // Check if slot is blocked by admin (Block package)
+  const hasBlock = slotBookings.some((b: any) => b.packageName === 'Block');
+  if (hasBlock) {
+    return { available: false, reason: 'Slot is blocked by admin' };
+  }
 
   if (slotBookings.length >= capacity) {
     return { available: false, reason: 'Slot is fully booked' };

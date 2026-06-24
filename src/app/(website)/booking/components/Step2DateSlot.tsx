@@ -21,12 +21,12 @@ interface Step2DateSlotProps {
 }
 
 export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, onUpdate, onNext }: Step2DateSlotProps) {
-  const [unavailableSlots, setUnavailableSlots] = useState<string[]>([]);
+  const [slotsAvailability, setSlotsAvailability] = useState<Record<string, { available: boolean; reason?: string }>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!selectedDate || !locationId) {
-      setUnavailableSlots([]);
+      setSlotsAvailability({});
       return;
     }
 
@@ -34,21 +34,20 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
       setLoading(true);
       try {
         const dateStr = selectedDate instanceof Date 
-          ? selectedDate.toISOString().split('T')[0]
+          ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
           : String(selectedDate).split('T')[0];
 
         const res = await fetch(`/api/booking/availability?branchId=${locationId}&date=${dateStr}`);
         const data = await res.json();
         
         if (data.success && data.slots) {
-          const blocked = Object.entries(data.slots)
-            .filter(([_, status]: any) => !status.available)
-            .map(([slot]) => slot);
-          
-          setUnavailableSlots(blocked);
+          setSlotsAvailability(data.slots);
+        } else {
+          setSlotsAvailability({});
         }
       } catch (err) {
         console.error('Error fetching slot availability:', err);
+        setSlotsAvailability({});
       } finally {
         setLoading(false);
       }
@@ -102,9 +101,11 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                   {allSlots.map((slot) => {
-                    const isBlocked = unavailableSlots.includes(slot);
+                    const slotInfo = slotsAvailability[slot];
+                    const isBlocked = slotInfo ? !slotInfo.available : false;
                     const isSelected = selectedSlot === slot;
                     const isSlotDisabled = isBlocked || !selectedDate;
+                    const isPast = slotInfo?.reason === 'Slot is in the past';
 
                     return (
                       <button
@@ -123,7 +124,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
                         </span>
                         {isBlocked && selectedDate && (
                           <span className="font-sans font-medium text-[9px] tracking-[0.2em] text-[#8B3A3A] mt-1 absolute bottom-1">
-                            BOOKED
+                            {isPast ? 'UNAVAILABLE' : 'BOOKED'}
                           </span>
                         )}
                       </button>
