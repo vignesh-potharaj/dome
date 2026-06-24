@@ -262,7 +262,7 @@ export default function DomeHomepage() {
           
           {/* Centered 3D Cylinder Ring Carousel Background */}
           <div 
-            className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0"
+            className="absolute top-0 left-0 right-0 h-[calc(100vh-100px)] flex items-center justify-center pointer-events-none select-none z-0"
             style={{
               perspective: `${perspective}px`,
             }}
@@ -337,30 +337,34 @@ export default function DomeHomepage() {
             </div>
           </div>
 
+          {/* Stable Vertical Navigation Arrows on the Right */}
+          <div className="absolute top-0 left-0 right-0 h-[calc(100vh-100px)] w-full max-w-7xl mx-auto px-6 md:px-12 pointer-events-none z-20">
+            <div className="relative w-full h-full">
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-4 pointer-events-auto">
+                <button
+                  onClick={() => setCurrentIndex((prev) => prev + 1)}
+                  className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-ape-blue hover:border-ape-blue transition-all duration-300 cursor-pointer"
+                  aria-label="Next Slide"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setCurrentIndex((prev) => prev - 1)}
+                  className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-ape-blue hover:border-ape-blue transition-all duration-300 cursor-pointer"
+                  aria-label="Previous Slide"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Floating controls / Content layered over the carousel */}
           <div className="w-full max-w-7xl mx-auto px-6 md:px-12 relative flex flex-col justify-end min-h-[calc(100vh-200px)] z-10 pointer-events-none">
-            
-            {/* Vertical Navigation Arrows on the Right */}
-            <div className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-20 pointer-events-auto">
-              <button
-                onClick={() => setCurrentIndex((prev) => prev + 1)}
-                className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-ape-blue hover:border-ape-blue transition-all duration-300 cursor-pointer"
-                aria-label="Next Slide"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setCurrentIndex((prev) => prev - 1)}
-                className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-ape-blue hover:border-ape-blue transition-all duration-300 cursor-pointer"
-                aria-label="Previous Slide"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-            </div>
 
             <div className="w-full flex flex-col lg:flex-row items-center lg:items-end justify-between gap-8 mt-auto">
               {/* Left Content Info Panel */}
