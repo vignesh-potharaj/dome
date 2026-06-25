@@ -45,7 +45,7 @@ export default async function RootLayout({
       </head>
       <body>
         {children}
-        {isSanityConfigured && <SanityLive />}
+        {/* {isSanityConfigured && <SanityLive />} */}
         {isSanityConfigured && isDraftMode && <VisualEditing />}
       </body>
     </html>
