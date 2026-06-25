@@ -66,6 +66,8 @@ const AppointmentManager: React.FC = () => {
   const [showRescheduleModal, setShowRescheduleModal] = useState<boolean>(false);
   const [newDate, setNewDate] = useState<string>('');
   const [newSlot, setNewSlot] = useState<string>('');
+  const [slotsAvailability, setSlotsAvailability] = useState<Record<string, { available: boolean; reason?: string }>>({});
+  const [loadingAvailability, setLoadingAvailability] = useState<boolean>(false);
   const [showEditDetailsModal, setShowEditDetailsModal] = useState<boolean>(false);
   const [editCake, setEditCake] = useState<string>('');
   const [editCakeMsg, setEditCakeMsg] = useState<string>('');
@@ -90,6 +92,62 @@ const AppointmentManager: React.FC = () => {
       }
     }
   }, [bookingsList]);
+
+  const fetchAvailability = async (date: string, branchId: string) => {
+    if (!date || !branchId) return;
+    setLoadingAvailability(true);
+    try {
+      const response = await axios.get(`${API_URL}/booking/availability`, {
+        params: { 
+          branchId, 
+          date,
+          excludeBookingId: selectedBooking?.id
+        }
+      });
+      if (response.data.success) {
+        const slots = response.data.slots;
+        setSlotsAvailability(slots);
+        
+        // Auto-select first available slot if current selection is disabled on new date
+        const isSelectedSlotAvailable = slots[newSlot]?.available ?? false;
+        
+        if (!isSelectedSlotAvailable) {
+          const firstAvailable = Object.keys(slots).find(slotVal => slots[slotVal]?.available);
+          if (firstAvailable) {
+            setNewSlot(firstAvailable);
+          } else {
+            setNewSlot('');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching slot availability:', err);
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showRescheduleModal && selectedBooking && newDate) {
+      fetchAvailability(newDate, selectedBooking.branchId);
+    }
+  }, [newDate, showRescheduleModal, selectedBooking]);
+
+  const isSlotDisabled = (slotValue: string) => {
+    const status = slotsAvailability[slotValue];
+    return status ? !status.available : false;
+  };
+
+  const getSlotSuffix = (slotValue: string) => {
+    const status = slotsAvailability[slotValue];
+    if (status && !status.available) {
+      return ` - Blocked (${status.reason || 'Unavailable'})`;
+    }
+    if (selectedBooking && newDate === selectedBooking.date && slotValue === selectedBooking.slot) {
+      return ' (Current)';
+    }
+    return '';
+  };
 
   const getHeaders = () => {
     const token = localStorage.getItem('token');
@@ -594,11 +652,42 @@ const AppointmentManager: React.FC = () => {
                       value={newSlot}
                       onChange={(e) => setNewSlot(e.target.value)}
                       required
+                      disabled={loadingAvailability}
                     >
-                      <option value="5:00 PM – 6:30 PM">Slot 1 (5:00 PM – 6:30 PM)</option>
-                      <option value="7:00 PM – 8:30 PM">Slot 2 (7:00 PM – 8:30 PM)</option>
-                      <option value="9:00 PM – 10:30 PM">Slot 3 (9:00 PM – 10:30 PM)</option>
-                      <option value="11:00 PM – 12:30 AM">Slot 4 (11:00 PM – 12:30 AM)</option>
+                      {loadingAvailability ? (
+                        <option value="">Loading slots...</option>
+                      ) : !newSlot ? (
+                        <option value="">No slots available on this date</option>
+                      ) : null}
+
+                      {!loadingAvailability && (
+                        <>
+                          <option 
+                            value="5:00 PM – 6:30 PM" 
+                            disabled={isSlotDisabled("5:00 PM – 6:30 PM")}
+                          >
+                            Slot 1 (5:00 PM – 6:30 PM){getSlotSuffix("5:00 PM – 6:30 PM")}
+                          </option>
+                          <option 
+                            value="7:00 PM – 8:30 PM" 
+                            disabled={isSlotDisabled("7:00 PM – 8:30 PM")}
+                          >
+                            Slot 2 (7:00 PM – 8:30 PM){getSlotSuffix("7:00 PM – 8:30 PM")}
+                          </option>
+                          <option 
+                            value="9:00 PM – 10:30 PM" 
+                            disabled={isSlotDisabled("9:00 PM – 10:30 PM")}
+                          >
+                            Slot 3 (9:00 PM – 10:30 PM){getSlotSuffix("9:00 PM – 10:30 PM")}
+                          </option>
+                          <option 
+                            value="11:00 PM – 12:30 AM" 
+                            disabled={isSlotDisabled("11:00 PM – 12:30 AM")}
+                          >
+                            Slot 4 (11:00 PM – 12:30 AM){getSlotSuffix("11:00 PM – 12:30 AM")}
+                          </option>
+                        </>
+                      )}
                     </select>
                   </div>
 

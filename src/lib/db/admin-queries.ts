@@ -86,7 +86,7 @@ export async function updateBookingByAdmin(
     if (isRescheduling || isActivating) {
       const targetDate = updates.date !== undefined ? updates.date : currentDateStr;
       const targetSlot = updates.slot !== undefined ? updates.slot : current.slot;
-      const availability = await checkSlotAvailability(tx, current.branchId, targetDate, targetSlot);
+      const availability = await checkSlotAvailability(tx, current.branchId, targetDate, targetSlot, bookingId);
       if (!availability.available) {
         throw new Error(`Cannot reschedule: ${availability.reason || 'Slot is unavailable'}`);
       }

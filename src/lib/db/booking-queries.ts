@@ -96,7 +96,13 @@ export function isSlotInPast(dateStr: string, slotStr: string): boolean {
 }
 
 // Check if a slot is blocked or fully booked
-export async function checkSlotAvailability(tx: any, branchId: string, dateStr: string, slot: string) {
+export async function checkSlotAvailability(
+  tx: any,
+  branchId: string,
+  dateStr: string,
+  slot: string,
+  excludeBookingId?: string
+) {
   // Check if slot is in the past
   if (isSlotInPast(dateStr, slot)) {
     return { available: false, reason: 'Slot is in the past' };
@@ -125,16 +131,20 @@ export async function checkSlotAvailability(tx: any, branchId: string, dateStr: 
   const capacity = branchList?.capacity ?? 6;
 
   // Get active/confirmed bookings for this slot
+  const conditions = [
+    eq(bookings.branchId, branchId),
+    eq(bookings.date, dateStr),
+    eq(bookings.slot, slot),
+    sql`status IN ('confirmed', 'pending_payment', 'rescheduled')` // include pending, confirmed, and rescheduled bookings
+  ];
+
+  if (excludeBookingId) {
+    conditions.push(sql`id <> ${excludeBookingId}`);
+  }
+
   const slotBookings = await tx.select()
     .from(bookings)
-    .where(
-      and(
-        eq(bookings.branchId, branchId),
-        eq(bookings.date, dateStr),
-        eq(bookings.slot, slot),
-        sql`status IN ('confirmed', 'pending_payment', 'rescheduled')` // include pending, confirmed, and rescheduled bookings
-      )
-    );
+    .where(and(...conditions));
 
   // Check if slot is blocked by admin (Block package)
   const hasBlock = slotBookings.some((b: any) => b.packageName === 'Block');

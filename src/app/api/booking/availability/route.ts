@@ -10,6 +10,18 @@ const allSlots = [
   '11:00 PM – 12:30 AM',
 ];
 
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders() });
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -19,7 +31,7 @@ export async function GET(request: Request) {
     if (!branchId || !date) {
       return NextResponse.json(
         { error: 'Missing required parameters: branchId and date are required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders() }
       );
     }
 
@@ -29,6 +41,8 @@ export async function GET(request: Request) {
       dateStr = date.split('T')[0];
     }
 
+    const excludeBookingId = searchParams.get('excludeBookingId') || undefined;
+
     const results = await db.transaction(async (tx) => {
       // Bypass RLS for customer-facing flow
       await tx.execute(sql`SELECT set_config('app.current_role', 'super_admin', true)`);
@@ -36,19 +50,19 @@ export async function GET(request: Request) {
       const slotsAvailability: Record<string, { available: boolean; reason?: string }> = {};
 
       for (const slot of allSlots) {
-        const status = await checkSlotAvailability(tx, branchId, dateStr, slot);
+        const status = await checkSlotAvailability(tx, branchId, dateStr, slot, excludeBookingId);
         slotsAvailability[slot] = status;
       }
 
       return slotsAvailability;
     });
 
-    return NextResponse.json({ success: true, slots: results });
+    return NextResponse.json({ success: true, slots: results }, { headers: corsHeaders() });
   } catch (error: any) {
     console.error('Error fetching availability:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to fetch availability' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }
