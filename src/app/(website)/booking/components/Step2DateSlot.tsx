@@ -151,6 +151,8 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
           </AnimatePresence>
         </div>
 
+      </div>
+
       {selectedDate && selectedSlot && (
         <motion.div
           initial={{ opacity: 0, y: 40 }}
