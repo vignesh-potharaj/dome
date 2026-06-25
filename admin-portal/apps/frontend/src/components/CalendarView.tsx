@@ -391,6 +391,20 @@ const CalendarView: React.FC = () => {
                       >
                         Release Day Block
                       </button>
+                    ) : bookings.filter(b => b.date === selectedDateStr && b.packageName !== 'Block' && b.status !== 'cancelled').length > 0 ? (
+                      <button
+                        onClick={() => {
+                          const count = bookings.filter(b => b.date === selectedDateStr && b.packageName !== 'Block' && b.status !== 'cancelled').length;
+                          alert(
+                            `Cannot block ${selectedDateStr}: There ${count === 1 ? 'is' : 'are'} ${count} active appointment${count === 1 ? '' : 's'} on this date.\n\nPlease reschedule or cancel all appointments below before blocking the entire day.`
+                          );
+                        }}
+                        className="btn btn-secondary"
+                        style={{ padding: '6px 12px', fontSize: '12px', opacity: 0.5, cursor: 'not-allowed' }}
+                        title="Reschedule all appointments on this date first"
+                      >
+                        ⚠ Block Entire Day
+                      </button>
                     ) : (
                       <button
                         onClick={() => {
@@ -405,6 +419,31 @@ const CalendarView: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Warning: Active bookings prevent day blocking */}
+                {!blockedDates.some(b => b.date === selectedDateStr) &&
+                  bookings.filter(b => b.date === selectedDateStr && b.packageName !== 'Block' && b.status !== 'cancelled').length > 0 && (
+                  <div style={{
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '10px',
+                    fontSize: '13px',
+                    color: 'var(--accent-gold)',
+                    lineHeight: 1.5
+                  }}>
+                    <span style={{ fontSize: '16px', flexShrink: 0, marginTop: '1px' }}>⚠️</span>
+                    <span>
+                      <strong>Day cannot be blocked</strong> — There {bookings.filter(b => b.date === selectedDateStr && b.packageName !== 'Block' && b.status !== 'cancelled').length === 1 ? 'is' : 'are'}{' '}
+                      {bookings.filter(b => b.date === selectedDateStr && b.packageName !== 'Block' && b.status !== 'cancelled').length} active appointment{bookings.filter(b => b.date === selectedDateStr && b.packageName !== 'Block' && b.status !== 'cancelled').length === 1 ? '' : 's'} scheduled.
+                      Please reschedule or cancel all appointments below before blocking the entire day.
+                    </span>
+                  </div>
+                )}
 
                 {/* Slots List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
