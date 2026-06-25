@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   description: "The Place to Ape",
 };
 
+const isSanityConfigured = !!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -43,8 +45,8 @@ export default async function RootLayout({
       </head>
       <body>
         {children}
-        <SanityLive />
-        {isDraftMode && <VisualEditing />}
+        {isSanityConfigured && <SanityLive />}
+        {isSanityConfigured && isDraftMode && <VisualEditing />}
       </body>
     </html>
   );
