@@ -65,22 +65,34 @@ export default function Step4Balloon({ selectedColor, onUpdate, onNext }: Step4B
       </div>
 
       {selectedColor && (
-        <motion.button
-          initial={{ opacity: 0, y: 16 }}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={onNext}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="fixed bottom-0 left-0 right-0 z-50 flex justify-center py-5 px-6"
           style={{
-            marginTop: '64px',
-            padding: '14px 56px',
-            background: '#00A7FA', color: '#09090E',
-            fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
-            letterSpacing: '0.2em', textTransform: 'uppercase',
-            border: 'none', borderRadius: '2px', cursor: 'pointer',
+            background: 'linear-gradient(to top, rgba(9,9,14,0.95) 60%, rgba(9,9,14,0))',
+            backdropFilter: 'blur(12px)',
           }}
-          className="hover:bg-[#89D0FF] transition-colors"
         >
-          Continue →
-        </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onNext}
+            style={{
+              padding: '16px 64px',
+              background: 'linear-gradient(135deg, #00A7FA, #0090d6)',
+              color: '#FFFFFF',
+              fontFamily: 'Inter', fontWeight: 600, fontSize: '13px',
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              border: 'none', borderRadius: '4px', cursor: 'pointer',
+              boxShadow: '0 0 30px rgba(0,167,250,0.4), 0 4px 15px rgba(0,0,0,0.3)',
+            }}
+            className="hover:shadow-[0_0_40px_rgba(0,167,250,0.6)] transition-all duration-300"
+          >
+            Continue →
+          </motion.button>
+        </motion.div>
       )}
 
     </div>

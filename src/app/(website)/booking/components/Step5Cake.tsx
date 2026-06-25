@@ -221,26 +221,41 @@ export default function Step5Cake({
       )}
 
       {selectedCake && (
-        <motion.button
-          disabled={!canContinue}
-          initial={{ opacity: 0, y: 16 }}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={onNext}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="fixed bottom-0 left-0 right-0 z-50 flex justify-center py-5 px-6"
           style={{
-            marginTop: '48px',
-            padding: '14px 56px',
-            background: canContinue ? '#00A7FA' : 'rgba(0,167,250,0.2)',
-            color: canContinue ? '#09090E' : 'rgba(0,167,250,0.4)',
-            cursor: canContinue ? 'pointer' : 'not-allowed',
-            fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
-            letterSpacing: '0.2em', textTransform: 'uppercase',
-            border: 'none', borderRadius: '2px',
-            transition: 'all 0.3s ease',
+            background: 'linear-gradient(to top, rgba(9,9,14,0.95) 60%, rgba(9,9,14,0))',
+            backdropFilter: 'blur(12px)',
           }}
-          className="hover:bg-[#89D0FF] transition-colors"
         >
-          Continue →
-        </motion.button>
+          <motion.button
+            whileHover={canContinue ? { scale: 1.03 } : {}}
+            whileTap={canContinue ? { scale: 0.97 } : {}}
+            disabled={!canContinue}
+            onClick={onNext}
+            style={{
+              padding: '16px 64px',
+              background: canContinue
+                ? 'linear-gradient(135deg, #00A7FA, #0090d6)'
+                : 'rgba(0,167,250,0.15)',
+              color: canContinue ? '#FFFFFF' : 'rgba(0,167,250,0.4)',
+              cursor: canContinue ? 'pointer' : 'not-allowed',
+              fontFamily: 'Inter', fontWeight: 600, fontSize: '13px',
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              border: 'none', borderRadius: '4px',
+              boxShadow: canContinue
+                ? '0 0 30px rgba(0,167,250,0.4), 0 4px 15px rgba(0,0,0,0.3)'
+                : 'none',
+              transition: 'all 0.3s ease',
+            }}
+            className={canContinue ? "hover:shadow-[0_0_40px_rgba(0,167,250,0.6)] transition-all duration-300" : "transition-all duration-300"}
+          >
+            Continue →
+          </motion.button>
+        </motion.div>
       )}
 
     </div>
