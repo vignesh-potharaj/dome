@@ -76,6 +76,16 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) =>
           </button>
 
           <button
+            onClick={() => setActiveTab('new-booking')}
+            className={`nav-item ${activeTab === 'new-booking' ? 'active' : ''}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="nav-icon">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+            New Booking
+          </button>
+
+          <button
             onClick={() => setActiveTab('crm')}
             className={`nav-item ${activeTab === 'crm' ? 'active' : ''}`}
           >

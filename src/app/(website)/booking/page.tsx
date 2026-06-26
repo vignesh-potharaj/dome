@@ -35,6 +35,7 @@ export default function BookingPage() {
       celebrantName: '',
       cakeMessage: '',
       specialNote: '',
+      marketingConsent: true,
     },
     agreedToTerms: false,
   });

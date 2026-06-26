@@ -142,14 +142,14 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
     }
   };
 
-  const handleInputChange = (id: string, val: string) => {
+  const handleInputChange = (id: string, val: any) => {
     // Reset phone verification if WhatsApp number changes
     if (id === 'phone' && isPhoneVerified) {
       setIsPhoneVerified(false);
     }
 
     onUpdate('customer', { ...booking.customer, [id]: val });
-    if (errors[id] && val.trim() !== '') {
+    if (errors[id] && typeof val === 'string' && val.trim() !== '') {
       setErrors(e => ({ ...e, [id]: false }));
     }
   };
@@ -307,7 +307,19 @@ export default function Step7Details({ booking, totalPrice, onUpdate, onNext }: 
               </div>
             </div>
           )}
-          
+          <div className="flex items-start gap-3 mt-4 mb-4 select-none">
+            <input
+              type="checkbox"
+              id="marketingConsent"
+              checked={booking.customer.marketingConsent !== false}
+              onChange={e => handleInputChange('marketingConsent', e.target.checked)}
+              className="w-4 h-4 mt-0.5 accent-[#00A7FA] bg-[rgba(0,167,250,0.04)] border border-[rgba(0,167,250,0.2)] rounded-[2px] cursor-pointer"
+            />
+            <label htmlFor="marketingConsent" className="font-sans font-light text-[12px] text-[#94A3B8] cursor-pointer leading-normal">
+              I agree to receive booking confirmations, updates and promotional offers on WhatsApp / Email.
+            </label>
+          </div>
+
           <div className="mt-4">
             <button
               onClick={handleNext}

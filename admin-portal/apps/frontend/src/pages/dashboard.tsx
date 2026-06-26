@@ -5,6 +5,7 @@ import CalendarView from '../components/CalendarView';
 import AppointmentManager from '../components/AppointmentManager';
 import SettingsPanel from '../components/SettingsPanel';
 import CrmPanel from '../components/CrmPanel';
+import OfflineBookingForm from '../components/OfflineBookingForm';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<string>('calendar');
@@ -15,6 +16,8 @@ const Dashboard = () => {
         return <CalendarView />;
       case 'bookings':
         return <AppointmentManager />;
+      case 'new-booking':
+        return <OfflineBookingForm />;
       case 'crm':
         return <CrmPanel />;
       case 'settings':
