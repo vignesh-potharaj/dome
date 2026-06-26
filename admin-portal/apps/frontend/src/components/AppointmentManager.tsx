@@ -54,6 +54,9 @@ const AppointmentManager: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
+  // Detail modal state
+  const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
+
   // Search/Filter states
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -165,10 +168,6 @@ const AppointmentManager: React.FC = () => {
       const response = await axios.get(`${API_URL}/admin/bookings`, getHeaders());
       if (response.data.success) {
         setBookingsList(response.data.bookings);
-        if (response.data.bookings.length > 0 && !selectedBooking) {
-          setSelectedBooking(response.data.bookings[0]);
-          setInternalNotesInput(response.data.bookings[0].internalNotes || '');
-        }
       }
     } catch (err: any) {
       console.error('Error fetching bookings:', err);
@@ -202,6 +201,16 @@ const AppointmentManager: React.FC = () => {
     }
 
     setFilteredBookings(list);
+  };
+
+  const openDetailModal = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setInternalNotesInput(booking.internalNotes || '');
+    setShowDetailModal(true);
+  };
+
+  const closeDetailModal = () => {
+    setShowDetailModal(false);
   };
 
   const handleSaveNotes = async () => {
@@ -314,318 +323,334 @@ const AppointmentManager: React.FC = () => {
     return `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(text)}`;
   };
 
-  const getActionClass = (action: string) => {
-    switch (action) {
-      case 'created': return 'log-created';
-      case 'status_changed': return 'log-status';
-      case 'rescheduled': return 'log-reschedule';
-      case 'cake_updated': return 'log-cake';
-      default: return 'log-modify';
-    }
-  };
-
   // Check unique branch list from current records
   const uniqueBranches = Array.from(new Set(bookingsList.map(b => b.branchId)));
 
   return (
-    <div className="bookings-manager-grid" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '24px', height: 'calc(100vh - 100px)' }}>
+    <div className="bookings-manager" style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'calc(100vh - 100px)' }}>
       
-      {/* Left Panel: Search & Cards list */}
-      <div className="bookings-sidebar panel-card" style={{ display: 'flex', flexDirection: 'column', padding: '20px', gap: '16px', overflowY: 'auto' }}>
-        <div className="sidebar-filter-header">
-          <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>Appointments List</h2>
+      {/* Header & Filters */}
+      <div className="panel-card" style={{ padding: '20px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div>
+            <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0 }}>Appointments</h1>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
+              Click on any appointment to view full details and manage it.
+            </p>
+          </div>
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+            {filteredBookings.length} of {bookingsList.length} appointments
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <input
             type="text"
             className="form-control"
             placeholder="Search by ID, name or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ marginBottom: '10px' }}
+            style={{ flex: 1, maxWidth: '400px' }}
           />
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <select className="form-control" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ fontSize: '12px', padding: '6px' }}>
-              <option value="all">All Statuses</option>
-              <option value="pending_payment">Pending</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="rescheduled">Rescheduled</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-
-            <select className="form-control" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} style={{ fontSize: '12px', padding: '6px' }}>
-              <option value="all">All Branches</option>
-              {uniqueBranches.map(b => (
-                <option key={b} value={b}>{b.charAt(0).toUpperCase() + b.slice(1)}</option>
-              ))}
-            </select>
-          </div>
+          <select className="form-control" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ fontSize: '13px', padding: '8px 12px', width: '160px' }}>
+            <option value="all">All Statuses</option>
+            <option value="pending_payment">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="rescheduled">Rescheduled</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <select className="form-control" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} style={{ fontSize: '13px', padding: '8px 12px', width: '160px' }}>
+            <option value="all">All Branches</option>
+            {uniqueBranches.map(b => (
+              <option key={b} value={b}>{b.charAt(0).toUpperCase() + b.slice(1)}</option>
+            ))}
+          </select>
         </div>
+      </div>
 
+      {/* Appointments List */}
+      <div className="panel-card" style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>Loading Appointments...</div>
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>Loading Appointments...</div>
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--status-cancelled)' }}>{error}</div>
+        ) : filteredBookings.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)', fontSize: '14px' }}>No bookings found matching filters.</div>
         ) : (
-          <div className="cards-scroll-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', flex: 1 }}>
-            {filteredBookings.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)', fontSize: '14px' }}>No bookings found matching filters.</div>
-            ) : (
-              filteredBookings.map((b) => (
-                <div
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                <th style={{ padding: '14px 20px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Booking ID</th>
+                <th style={{ padding: '14px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Customer</th>
+                <th style={{ padding: '14px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Date</th>
+                <th style={{ padding: '14px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Slot</th>
+                <th style={{ padding: '14px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Package</th>
+                <th style={{ padding: '14px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Branch</th>
+                <th style={{ padding: '14px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Status</th>
+                <th style={{ padding: '14px 16px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-secondary)', fontWeight: 600 }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBookings.map((b) => (
+                <tr
                   key={b.id}
-                  onClick={() => setSelectedBooking(b)}
+                  onClick={() => openDetailModal(b)}
                   style={{
-                    backgroundColor: selectedBooking?.id === b.id ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255,255,255,0.01)',
-                    border: selectedBooking?.id === b.id ? '1px solid var(--accent-gold)' : '1px solid var(--border-color)',
-                    borderRadius: '12px',
-                    padding: '16px',
+                    borderBottom: '1px solid var(--border-color)',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
+                    transition: 'background-color 0.15s ease',
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--accent-gold)' }}>{b.id}</span>
+                  <td style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--accent-gold)', fontFamily: 'monospace', fontSize: '13px' }}>{b.id}</td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <div style={{ fontWeight: 500 }}>{b.customer?.name || 'Guest'}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{b.customer?.phone || ''}</div>
+                  </td>
+                  <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>{b.date}</td>
+                  <td style={{ padding: '14px 16px', fontSize: '12px', color: 'var(--text-secondary)' }}>{b.slot.split('–')[0].trim()}</td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{b.packageName}</span>
+                  </td>
+                  <td style={{ padding: '14px 16px', textTransform: 'capitalize', fontSize: '13px' }}>{b.branchId}</td>
+                  <td style={{ padding: '14px 16px' }}>
                     <span className={`status-badge ${b.status}`}>{b.status.replace('_', ' ')}</span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '15px' }}>{b.customer?.name}</div>
-                    <div style={{ color: 'var(--text-secondary)' }}>
-                      {b.date} • {b.slot.split('–')[0]}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                      <span>{b.packageName.toUpperCase()}</span>
-                      <span style={{ textTransform: 'capitalize' }}>{b.branchId}</span>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                  </td>
+                  <td style={{ padding: '14px 16px', fontWeight: 600 }}>₹{b.totalPrice}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
-      {/* Right Panel: Expanded details and actions */}
-      <div className="booking-details-panel panel-card" style={{ overflowY: 'auto', padding: '24px' }}>
-        {selectedBooking ? (
-          <div className="details-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            
-            {/* Header section */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-              <div>
-                <span style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px' }}>Booking Details</span>
-                <h1 style={{ fontSize: '24px', fontWeight: 700, margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {selectedBooking.id}
-                  <span className={`status-badge ${selectedBooking.status}`} style={{ fontSize: '12px' }}>
-                    {selectedBooking.status.replace('_', ' ')}
-                  </span>
-                </h1>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <a
-                  href={getWhatsAppLink(selectedBooking)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-secondary"
-                  style={{ textDecoration: 'none', color: '#25D366', borderColor: '#25D366' }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '6px' }}>
-                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.003c4.368 0 7.927-3.558 7.93-7.93a7.9 7.9 0 0 0-2.326-5.647zM11.566 10.1c-.2-.1-.1.31-.8-.415-.17-.185-.348-.31-.516-.484-.168-.174-.35-.355-.54-.538-.19-.18-.396-.364-.6-.546-.235-.21-.492-.43-.767-.625-.275-.195-.514-.3-.626-.38a.33.33 0 0 0-.408.063c-.113.117-.492.572-.614.722-.122.15-.243.165-.443.065-.2-.1-.84-.311-1.602-.99-.593-.53-1.002-1.182-1.118-1.382-.117-.2-.012-.311.087-.41.09-.09.2-.23.3-.34.1-.1.137-.17.2-.3.067-.13.033-.245-.017-.345-.05-.1-.444-1.07-.607-1.466-.16-.39-.314-.338-.43-.343a4.7 4.7 0 0 0-.315-.005c-.173.003-.454.066-.692.324-.238.258-.91.89-.91 2.17s.93 2.518 1.06 2.693c.13.174 1.83 2.793 4.43 3.916.62.268 1.102.428 1.48.548.624.2 1.19.17 1.638.103.5-.075 1.53-.625 1.74-1.226c.21-.6.21-1.127.147-1.226-.063-.1-.235-.15-.436-.25z"/>
-                  </svg>
-                  Message Customer
-                </a>
-
-                {selectedBooking.status !== 'cancelled' && (
-                  <>
-                    <button onClick={openEditDetailsModal} className="btn btn-secondary">Edit</button>
-                    <button onClick={openRescheduleModal} className="btn btn-secondary">Reschedule</button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Core Info Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              
-              {/* Customer details */}
-              <div className="panel-card" style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.015)' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', marginBottom: '12px', color: 'var(--accent-gold)' }}>Customer & Celebrant Details</h3>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                  <tbody>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Name</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.customer?.name}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>WhatsApp</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.customer?.phone}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Email</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.customer?.email || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Occasion</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500, textTransform: 'capitalize' }}>
-                        {selectedBooking.specialNote?.toLowerCase().includes('birthday') || selectedBooking.specialNote?.toLowerCase().includes('anniversary') 
-                          ? selectedBooking.specialNote 
-                          : 'Special Celebration'}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Celebrant Name</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.celebrantName || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Guest Count</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.guestCount} guests</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Experience customizations */}
-              <div className="panel-card" style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.015)' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', marginBottom: '12px', color: 'var(--accent-gold)' }}>Selected Experience</h3>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                  <tbody>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Package</td>
-                      <td style={{ padding: '6px 0', fontWeight: 600, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>{selectedBooking.packageName}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Balloon Palette</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.balloonColor || 'None Selected'}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Cake Flavor</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.cakeOption || 'Complimentary Compliment'}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Message on Cake</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500, fontStyle: 'italic' }}>"{selectedBooking.messageOnCake || 'None'}"</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>LED Light Board</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500 }}>{selectedBooking.ledName || 'None'}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '6px 0', color: 'var(--text-secondary)' }}>Add-Ons</td>
-                      <td style={{ padding: '6px 0', fontWeight: 500, fontSize: '12px' }}>
-                        {selectedBooking.addOns && selectedBooking.addOns.length > 0 
-                          ? selectedBooking.addOns.join(', ') 
-                          : 'No additional add-ons'}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-            </div>
-
-            {/* Financials & Override details */}
-            <div className="panel-card" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', gap: '40px' }}>
-                <div>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Total Price</span>
-                  <div style={{ fontSize: '20px', fontWeight: 700 }}>₹{selectedBooking.totalPrice}</div>
-                </div>
-                <div>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Advance Paid (Online)</span>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--status-confirmed)' }}>₹{selectedBooking.advancePaid}</div>
-                </div>
-                <div>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Balance Remaining</span>
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: selectedBooking.balancePaid ? 'var(--text-secondary)' : 'var(--status-pending)' }}>
-                    {selectedBooking.balancePaid ? '₹0 (Fully Settled)' : `₹${selectedBooking.totalPrice - selectedBooking.advancePaid}`}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                {!selectedBooking.balancePaid && selectedBooking.status !== 'cancelled' ? (
-                  <button onClick={handleMarkBalancePaid} className="btn btn-primary">Mark Balance Paid</button>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--status-confirmed)', fontWeight: 600 }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '20px', height: '20px' }}>
-                      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
-                    </svg>
-                    Payment Settled
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Notes and logs grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
-              
-              {/* Internal Notes block */}
-              <div className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', color: 'var(--accent-gold)' }}>Internal Admin Notes</h3>
-                <textarea
-                  className="form-control"
-                  rows={6}
-                  placeholder="Add notes that only other admins can see..."
-                  value={internalNotesInput}
-                  onChange={(e) => setInternalNotesInput(e.target.value)}
-                  style={{ resize: 'none', fontSize: '13px' }}
-                />
-                <button onClick={handleSaveNotes} className="btn btn-secondary" style={{ width: 'fit-content', marginLeft: 'auto' }}>Save Notes</button>
-              </div>
-
-              {/* Booking Logs (Audit Trail) */}
-              <div className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', color: 'var(--accent-gold)' }}>Modification History Log</h3>
+      {/* All Modals via Portal */}
+      {mounted && typeof window !== 'undefined' && createPortal(
+        <>
+          {/* Appointment Detail Modal */}
+          {showDetailModal && selectedBooking && (
+            <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeDetailModal(); }}>
+              <div className="modal-content" style={{ width: '780px', maxWidth: '95vw', maxHeight: '92vh', overflowY: 'auto', padding: 0 }}>
                 
-                <div className="logs-scroller" style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-                  {selectedBooking.logs && selectedBooking.logs.length > 0 ? (
-                    selectedBooking.logs.map((log) => (
-                      <div key={log.id} style={{ padding: '8px 12px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                          <span style={{ fontWeight: 600, textTransform: 'capitalize', color: 'var(--accent-gold)' }}>
-                            {log.action.replace('_', ' ')}
-                          </span>
-                          <span style={{ color: 'var(--text-secondary)' }}>
-                            {new Date(log.createdAt).toLocaleDateString()} {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <div style={{ color: 'var(--text-secondary)' }}>
-                          {log.action === 'created' && 'Reservation registered by Customer.'}
-                          {log.action === 'status_changed' && `Status updated to ${log.details.newStatus}.`}
-                          {log.action === 'rescheduled' && `Date rescheduled to ${log.details.changes?.date?.new || selectedBooking.date} / ${log.details.changes?.slot?.new || selectedBooking.slot}.`}
-                          {log.action === 'cake_updated' && 'Cake flavor or wording customizations updated.'}
-                          {log.action === 'balance_paid_updated' && 'Balance paid marked as settled.'}
-                          {log.action === 'modified' && 'Booking specifications modified.'}
+                {/* Modal Header */}
+                <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'sticky', top: 0, backgroundColor: 'var(--bg-secondary)', zIndex: 1 }}>
+                  <div>
+                    <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px' }}>Booking Details</span>
+                    <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      {selectedBooking.id}
+                      <span className={`status-badge ${selectedBooking.status}`} style={{ fontSize: '11px' }}>
+                        {selectedBooking.status.replace('_', ' ')}
+                      </span>
+                    </h2>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <a
+                      href={getWhatsAppLink(selectedBooking)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-secondary"
+                      style={{ textDecoration: 'none', color: '#25D366', borderColor: '#25D366', padding: '6px 12px', fontSize: '12px' }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style={{ marginRight: '4px', verticalAlign: '-2px' }}>
+                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.907h.003c4.368 0 7.927-3.558 7.93-7.93a7.9 7.9 0 0 0-2.326-5.647zM11.566 10.1c-.2-.1-.1.31-.8-.415-.17-.185-.348-.31-.516-.484-.168-.174-.35-.355-.54-.538-.19-.18-.396-.364-.6-.546-.235-.21-.492-.43-.767-.625-.275-.195-.514-.3-.626-.38a.33.33 0 0 0-.408.063c-.113.117-.492.572-.614.722-.122.15-.243.165-.443.065-.2-.1-.84-.311-1.602-.99-.593-.53-1.002-1.182-1.118-1.382-.117-.2-.012-.311.087-.41.09-.09.2-.23.3-.34.1-.1.137-.17.2-.3.067-.13.033-.245-.017-.345-.05-.1-.444-1.07-.607-1.466-.16-.39-.314-.338-.43-.343a4.7 4.7 0 0 0-.315-.005c-.173.003-.454.066-.692.324-.238.258-.91.89-.91 2.17s.93 2.518 1.06 2.693c.13.174 1.83 2.793 4.43 3.916.62.268 1.102.428 1.48.548.624.2 1.19.17 1.638.103.5-.075 1.53-.625 1.74-1.226.21-.6.21-1.127.147-1.226-.063-.1-.235-.15-.436-.25z"/>
+                      </svg>
+                      WhatsApp
+                    </a>
+
+                    {selectedBooking.status !== 'cancelled' && (
+                      <>
+                        <button onClick={openEditDetailsModal} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '12px' }}>Edit</button>
+                        <button onClick={openRescheduleModal} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '12px' }}>Reschedule</button>
+                      </>
+                    )}
+                    <button onClick={closeDetailModal} className="modal-close" style={{ marginLeft: '8px' }}>X</button>
+                  </div>
+                </div>
+
+                {/* Modal Body */}
+                <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                  {/* Core Info Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    
+                    {/* Customer details */}
+                    <div className="panel-card" style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.015)', backdropFilter: 'none', boxShadow: 'none' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', marginBottom: '12px', color: 'var(--accent-gold)' }}>Customer & Celebrant Details</h3>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)', width: '40%' }}>Name</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.customer?.name}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>WhatsApp</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.customer?.phone}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Email</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.customer?.email || 'N/A'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Occasion</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500, textTransform: 'capitalize' }}>
+                              {selectedBooking.specialNote?.toLowerCase().includes('birthday') || selectedBooking.specialNote?.toLowerCase().includes('anniversary') 
+                                ? selectedBooking.specialNote 
+                                : 'Special Celebration'}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Celebrant Name</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.celebrantName || 'N/A'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Guest Count</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.guestCount} guests</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Experience customizations */}
+                    <div className="panel-card" style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.015)', backdropFilter: 'none', boxShadow: 'none' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', marginBottom: '12px', color: 'var(--accent-gold)' }}>Selected Experience</h3>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                        <tbody>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)', width: '40%' }}>Package</td>
+                            <td style={{ padding: '5px 0', fontWeight: 600, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>{selectedBooking.packageName}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Date & Slot</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.date} • {selectedBooking.slot}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Balloon Palette</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.balloonColor || 'None Selected'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Cake Flavor</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.cakeOption || 'Complimentary Compliment'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Message on Cake</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500, fontStyle: 'italic' }}>"{selectedBooking.messageOnCake || 'None'}"</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>LED Light Board</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500 }}>{selectedBooking.ledName || 'None'}</td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '5px 0', color: 'var(--text-secondary)' }}>Add-Ons</td>
+                            <td style={{ padding: '5px 0', fontWeight: 500, fontSize: '12px' }}>
+                              {selectedBooking.addOns && selectedBooking.addOns.length > 0 
+                                ? selectedBooking.addOns.join(', ') 
+                                : 'No additional add-ons'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Financials */}
+                  <div className="panel-card" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backdropFilter: 'none', boxShadow: 'none' }}>
+                    <div style={{ display: 'flex', gap: '40px' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Price</span>
+                        <div style={{ fontSize: '20px', fontWeight: 700 }}>₹{selectedBooking.totalPrice}</div>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Advance Paid</span>
+                        <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--status-confirmed)' }}>₹{selectedBooking.advancePaid}</div>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Balance</span>
+                        <div style={{ fontSize: '20px', fontWeight: 700, color: selectedBooking.balancePaid ? 'var(--text-secondary)' : 'var(--status-pending)' }}>
+                          {selectedBooking.balancePaid ? '₹0 (Settled)' : `₹${selectedBooking.totalPrice - selectedBooking.advancePaid}`}
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>No modification logs recorded.</div>
+                    </div>
+
+                    <div>
+                      {!selectedBooking.balancePaid && selectedBooking.status !== 'cancelled' ? (
+                        <button onClick={handleMarkBalancePaid} className="btn btn-primary" style={{ fontSize: '13px' }}>Mark Balance Paid</button>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--status-confirmed)', fontWeight: 600, fontSize: '13px' }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '18px', height: '18px' }}>
+                            <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+                          </svg>
+                          Payment Settled
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Notes and Logs */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '20px' }}>
+                    
+                    {/* Internal Notes */}
+                    <div className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', backdropFilter: 'none', boxShadow: 'none' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', color: 'var(--accent-gold)' }}>Internal Admin Notes</h3>
+                      <textarea
+                        className="form-control"
+                        rows={5}
+                        placeholder="Add notes that only other admins can see..."
+                        value={internalNotesInput}
+                        onChange={(e) => setInternalNotesInput(e.target.value)}
+                        style={{ resize: 'none', fontSize: '13px' }}
+                      />
+                      <button onClick={handleSaveNotes} className="btn btn-secondary" style={{ width: 'fit-content', marginLeft: 'auto', fontSize: '12px' }}>Save Notes</button>
+                    </div>
+
+                    {/* Modification History */}
+                    <div className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', backdropFilter: 'none', boxShadow: 'none' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 600, borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', color: 'var(--accent-gold)' }}>Modification History Log</h3>
+                      
+                      <div className="logs-scroller" style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
+                        {selectedBooking.logs && selectedBooking.logs.length > 0 ? (
+                          selectedBooking.logs.map((log) => (
+                            <div key={log.id} style={{ padding: '8px 12px', backgroundColor: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                <span style={{ fontWeight: 600, textTransform: 'capitalize', color: 'var(--accent-gold)' }}>
+                                  {log.action.replace('_', ' ')}
+                                </span>
+                                <span style={{ color: 'var(--text-secondary)' }}>
+                                  {new Date(log.createdAt).toLocaleDateString()} {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              <div style={{ color: 'var(--text-secondary)' }}>
+                                {log.action === 'created' && 'Reservation registered by Customer.'}
+                                {log.action === 'status_changed' && `Status updated to ${log.details.newStatus}.`}
+                                {log.action === 'rescheduled' && `Date rescheduled to ${log.details.changes?.date?.new || selectedBooking.date} / ${log.details.changes?.slot?.new || selectedBooking.slot}.`}
+                                {log.action === 'cake_updated' && 'Cake flavor or wording customizations updated.'}
+                                {log.action === 'balance_paid_updated' && 'Balance paid marked as settled.'}
+                                {log.action === 'modified' && 'Booking specifications modified.'}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px' }}>No modification logs recorded.</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Cancel Booking */}
+                  {selectedBooking.status !== 'cancelled' && (
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={handleCancelBooking} className="btn btn-secondary" style={{ color: 'var(--status-cancelled)', borderColor: 'rgba(239, 68, 68, 0.3)', fontSize: '13px' }}>Cancel Reservation</button>
+                    </div>
                   )}
                 </div>
               </div>
-
             </div>
+          )}
 
-            {/* Cancel booking option at bottom */}
-            {selectedBooking.status !== 'cancelled' && (
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
-                <button onClick={handleCancelBooking} className="btn btn-secondary" style={{ color: 'var(--status-cancelled)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>Cancel Reservation</button>
-              </div>
-            )}
-
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)' }}>
-            Select a booking from the list to view full specifications.
-          </div>
-        )}
-      </div>
-
-      {mounted && typeof window !== 'undefined' && createPortal(
-        <>
           {/* Reschedule Modal */}
           {showRescheduleModal && selectedBooking && (
-            <div className="modal-overlay">
+            <div className="modal-overlay" style={{ zIndex: 1100 }}>
               <div className="modal-content">
                 <div className="modal-header">
                   <h3>Reschedule Reservation: {selectedBooking.id}</h3>
@@ -702,7 +727,7 @@ const AppointmentManager: React.FC = () => {
 
           {/* Edit Details (Cake & Palette) Modal */}
           {showEditDetailsModal && selectedBooking && (
-            <div className="modal-overlay">
+            <div className="modal-overlay" style={{ zIndex: 1100 }}>
               <div className="modal-content">
                 <div className="modal-header">
                   <h3>Edit Experience Customizations: {selectedBooking.id}</h3>

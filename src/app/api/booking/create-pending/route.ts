@@ -50,8 +50,9 @@ export async function POST(request: Request) {
         occasions[key] = dateStr; // Store this occasion date
       }
 
-      // Read marketingConsent from customer fields or booking fields
-      const marketingConsent = !!customer.marketingConsent || !!booking.marketingConsent || !!booking.customer.marketingConsent;
+      // Default opt-in: customers are opted in unless they explicitly opt out
+      const rawConsent = customer.marketingConsent ?? booking.marketingConsent ?? booking.customer.marketingConsent;
+      const marketingConsent = rawConsent !== false;
 
       const dbCustomer = await getOrCreateCustomer(tx, {
         name: customer.name,
