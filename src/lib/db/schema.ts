@@ -17,7 +17,7 @@ export const customers = pgTable('customers', {
   phone: varchar('phone', { length: 20 }).unique().notNull(), // WhatsApp number
   email: varchar('email', { length: 100 }),
   occasions: jsonb('occasions').default({}).notNull(), // stores occasion dates: { birthday: '1995-06-15', anniversary: '2020-11-20' }
-  marketingConsent: boolean('marketing_consent').default(false).notNull(), // DPDP Act compliance flag
+  marketingConsent: boolean('marketing_consent').default(true).notNull(), // Default opt-in; customers can opt out
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

@@ -166,6 +166,30 @@ export async function blockDate(
     // If branch admin, force the branch_id to be their own branch
     const targetBranch = role === 'super_admin' ? (branchId || 'kokapet') : (branchId as string);
 
+    // Check for existing active appointments on this date
+    const existingBookings = await tx.select({
+      id: bookings.id,
+      slot: bookings.slot,
+      packageName: bookings.packageName,
+      status: bookings.status,
+    })
+    .from(bookings)
+    .where(
+      and(
+        eq(bookings.branchId, targetBranch),
+        eq(bookings.date, dateStr),
+        sql`${bookings.packageName} != 'Block'`,
+        sql`${bookings.status} IN ('pending_payment', 'confirmed', 'rescheduled')`
+      )
+    );
+
+    if (existingBookings.length > 0) {
+      const bookingIds = existingBookings.map(b => b.id).join(', ');
+      throw new Error(
+        `Cannot block ${dateStr}: There ${existingBookings.length === 1 ? 'is' : 'are'} ${existingBookings.length} active appointment${existingBookings.length === 1 ? '' : 's'} on this date (${bookingIds}). Please reschedule or cancel all appointments before blocking the entire day.`
+      );
+    }
+
     const [blocked] = await tx.insert(blockedDates)
       .values({
         branchId: targetBranch,
