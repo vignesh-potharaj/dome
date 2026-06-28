@@ -86,7 +86,8 @@ export async function POST(request: Request) {
         celebrantName: customer.celebrantName || null,
         specialNote,
         guestCount: parseInt(customer.guestCount, 10) || 2,
-        razorpayOrderId
+        razorpayOrderId,
+        existingBookingId: booking.bookingId || null,
       });
 
       return {

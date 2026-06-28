@@ -16,13 +16,15 @@ interface Step2DateSlotProps {
   locationId: string | null;
   selectedDate: Date | null;
   selectedSlot: string | null;
+  bookingId?: string | null;
   onUpdate: (key: string, value: any) => void;
   onNext: () => void;
 }
 
-export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, onUpdate, onNext }: Step2DateSlotProps) {
+export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, bookingId, onUpdate, onNext }: Step2DateSlotProps) {
   const [slotsAvailability, setSlotsAvailability] = useState<Record<string, { available: boolean; reason?: string }>>({});
   const [loading, setLoading] = useState(false);
+  const [holding, setHolding] = useState(false);
 
   useEffect(() => {
     if (!selectedDate || !locationId) {
@@ -37,7 +39,8 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
           ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
           : String(selectedDate).split('T')[0];
 
-        const res = await fetch(`/api/booking/availability?branchId=${locationId}&date=${dateStr}`);
+        const excludeParam = bookingId ? `&excludeBookingId=${bookingId}` : '';
+        const res = await fetch(`/api/booking/availability?branchId=${locationId}&date=${dateStr}${excludeParam}`);
         const data = await res.json();
         
         if (data.success && data.slots) {
@@ -54,7 +57,43 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
     }
 
     fetchAvailability();
-  }, [selectedDate, locationId]);
+  }, [selectedDate, locationId, bookingId]);
+
+  const handleContinue = async () => {
+    if (!locationId || !selectedDate || !selectedSlot) return;
+
+    setHolding(true);
+    try {
+      const dateStr = selectedDate instanceof Date 
+        ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+        : String(selectedDate).split('T')[0];
+
+      const res = await fetch('/api/booking/hold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          branchId: locationId,
+          date: dateStr,
+          slot: selectedSlot,
+          bookingId: bookingId || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        onUpdate('bookingId', data.bookingId);
+        onUpdate('holdExpiresAt', data.holdExpiresAt);
+        onNext();
+      } else {
+        alert(data.error || 'Failed to hold slot. Please select another time.');
+      }
+    } catch (err) {
+      console.error('Error holding slot:', err);
+      alert('An error occurred while reserving the slot. Please try again.');
+    } finally {
+      setHolding(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[64px] px-6 pb-24">
@@ -167,7 +206,8 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={onNext}
+            disabled={holding}
+            onClick={handleContinue}
             style={{
               padding: '16px 64px',
               background: 'linear-gradient(135deg, #00A7FA, #0090d6)',
@@ -176,10 +216,11 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
               letterSpacing: '0.2em', textTransform: 'uppercase',
               border: 'none', borderRadius: '4px', cursor: 'pointer',
               boxShadow: '0 0 30px rgba(0,167,250,0.4), 0 4px 15px rgba(0,0,0,0.3)',
+              opacity: holding ? 0.7 : 1,
             }}
             className="hover:shadow-[0_0_40px_rgba(0,167,250,0.6)] transition-all duration-300"
           >
-            Continue →
+            {holding ? 'Reserving Slot...' : 'Continue →'}
           </motion.button>
         </motion.div>
       )}

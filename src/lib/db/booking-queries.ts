@@ -130,12 +130,18 @@ export async function checkSlotAvailability(
   });
   const capacity = branchList?.capacity ?? 6;
 
-  // Get active/confirmed bookings for this slot
+  // Get active/confirmed/held bookings for this slot
   const conditions = [
     eq(bookings.branchId, branchId),
     eq(bookings.date, dateStr),
     eq(bookings.slot, slot),
-    sql`status IN ('confirmed', 'pending_payment', 'rescheduled')` // include pending, confirmed, and rescheduled bookings
+    sql`(
+      status IN ('confirmed', 'rescheduled') 
+      OR (
+        status IN ('pending_payment', 'temporary_hold') 
+        AND (hold_expires_at IS NULL OR hold_expires_at > NOW())
+      )
+    )`
   ];
 
   if (excludeBookingId) {
@@ -157,6 +163,62 @@ export async function checkSlotAvailability(
   }
 
   return { available: true };
+}
+
+// Helper to create or refresh a 30-minute temporary slot hold
+export async function createOrUpdateSlotHold(
+  tx: any,
+  data: {
+    branchId: string;
+    date: string;
+    slot: string;
+    existingBookingId?: string | null;
+  }
+) {
+  const holdExpiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+
+  if (data.existingBookingId) {
+    const existing = await tx.select().from(bookings).where(eq(bookings.id, data.existingBookingId)).limit(1);
+    if (existing.length > 0) {
+      const current = existing[0];
+      if (current.date !== data.date || current.slot !== data.slot || current.branchId !== data.branchId) {
+        const availability = await checkSlotAvailability(tx, data.branchId, data.date, data.slot, data.existingBookingId);
+        if (!availability.available) {
+          throw new Error(availability.reason || 'Slot not available');
+        }
+      }
+      const [updated] = await tx.update(bookings)
+        .set({
+          branchId: data.branchId,
+          date: data.date,
+          slot: data.slot,
+          status: 'temporary_hold',
+          holdExpiresAt,
+        })
+        .where(eq(bookings.id, data.existingBookingId))
+        .returning();
+      return updated;
+    }
+  }
+
+  const availability = await checkSlotAvailability(tx, data.branchId, data.date, data.slot);
+  if (!availability.available) {
+    throw new Error(availability.reason || 'Slot not available');
+  }
+
+  const bookingId = generateBookingId(data.branchId);
+  const [booking] = await tx.insert(bookings)
+    .values({
+      id: bookingId,
+      branchId: data.branchId,
+      date: data.date,
+      slot: data.slot,
+      status: 'temporary_hold',
+      holdExpiresAt,
+    })
+    .returning();
+
+  return booking;
 }
 
 // 1. Create or update customer record and occasions mapping
@@ -236,10 +298,11 @@ export async function createPendingBooking(
     specialNote?: string | null;
     guestCount: number;
     razorpayOrderId?: string | null;
+    existingBookingId?: string | null;
   }
 ) {
-  // Double check availability
-  const availability = await checkSlotAvailability(tx, data.branchId, data.date, data.slot);
+  // Double check availability (exclude existingBookingId if updating)
+  const availability = await checkSlotAvailability(tx, data.branchId, data.date, data.slot, data.existingBookingId || undefined);
   if (!availability.available) {
     throw new Error(availability.reason || 'Slot not available');
   }
@@ -256,32 +319,67 @@ export async function createPendingBooking(
 
   const advancePaid = Math.floor(totalPrice / 2); // 50% advance
 
-  const bookingId = generateBookingId(data.branchId);
+  let booking;
 
-  const [booking] = await tx.insert(bookings)
-    .values({
-      id: bookingId,
-      branchId: data.branchId,
-      customerId: data.customerId,
-      date: data.date,
-      slot: data.slot,
-      packageName: data.packageName,
-      balloonColor: data.balloonColor || null,
-      cakeOption: data.cakeOption || null,
-      sparklers: data.sparklers ?? false,
-      ledName: data.ledName || null,
-      messageOnCake: data.messageOnCake || null,
-      addOns: data.addOns,
-      celebrantName: data.celebrantName || null,
-      specialNote: data.specialNote || null,
-      guestCount: data.guestCount,
-      status: 'pending_payment',
-      totalPrice,
-      advancePaid,
-      razorpayOrderId: data.razorpayOrderId || null,
-      balancePaid: false,
-    })
-    .returning();
+  if (data.existingBookingId) {
+    const existing = await tx.select().from(bookings).where(eq(bookings.id, data.existingBookingId)).limit(1);
+    if (existing.length > 0) {
+      const [updated] = await tx.update(bookings)
+        .set({
+          branchId: data.branchId,
+          customerId: data.customerId,
+          date: data.date,
+          slot: data.slot,
+          packageName: data.packageName,
+          balloonColor: data.balloonColor || null,
+          cakeOption: data.cakeOption || null,
+          sparklers: data.sparklers ?? false,
+          ledName: data.ledName || null,
+          messageOnCake: data.messageOnCake || null,
+          addOns: data.addOns,
+          celebrantName: data.celebrantName || null,
+          specialNote: data.specialNote || null,
+          guestCount: data.guestCount,
+          status: 'pending_payment',
+          totalPrice,
+          advancePaid,
+          razorpayOrderId: data.razorpayOrderId || null,
+          balancePaid: false,
+        })
+        .where(eq(bookings.id, data.existingBookingId))
+        .returning();
+      booking = updated;
+    }
+  }
+
+  if (!booking) {
+    const bookingId = generateBookingId(data.branchId);
+    const [inserted] = await tx.insert(bookings)
+      .values({
+        id: bookingId,
+        branchId: data.branchId,
+        customerId: data.customerId,
+        date: data.date,
+        slot: data.slot,
+        packageName: data.packageName,
+        balloonColor: data.balloonColor || null,
+        cakeOption: data.cakeOption || null,
+        sparklers: data.sparklers ?? false,
+        ledName: data.ledName || null,
+        messageOnCake: data.messageOnCake || null,
+        addOns: data.addOns,
+        celebrantName: data.celebrantName || null,
+        specialNote: data.specialNote || null,
+        guestCount: data.guestCount,
+        status: 'pending_payment',
+        totalPrice,
+        advancePaid,
+        razorpayOrderId: data.razorpayOrderId || null,
+        balancePaid: false,
+      })
+      .returning();
+    booking = inserted;
+  }
 
   // Create booking log
   await tx.insert(bookingLogs)

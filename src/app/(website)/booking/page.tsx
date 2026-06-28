@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import ProgressBar from './components/ProgressBar';
+import HoldCountdownBanner from './components/HoldCountdownBanner';
 import Step1Location from './components/Step1Location';
 import Step2DateSlot from './components/Step2DateSlot';
 import Step3Package from './components/Step3Package';
@@ -16,6 +17,8 @@ import Step8Checkout from './components/Step8Checkout';
 export default function BookingPage() {
   const [step, setStep] = useState(1);
   const [booking, setBooking] = useState({
+    bookingId: null as string | null,
+    holdExpiresAt: null as string | Date | null,
     location: null as string | null,
     date: null as Date | null,
     slot: null as string | null,
@@ -54,6 +57,12 @@ export default function BookingPage() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const back = () => setStep(s => Math.max(s - 1, 1));
   const update = (key: string, value: any) => setBooking(b => ({ ...b, [key]: value }));
+
+  const handleHoldExpired = () => {
+    alert('Your 30-minute slot reservation has expired. Please select your preferred time slot again.');
+    setBooking(b => ({ ...b, bookingId: null, holdExpiresAt: null, slot: null }));
+    setStep(2);
+  };
 
   const calculateTotal = (b: typeof booking) => {
     const packagePrice = {
@@ -97,7 +106,7 @@ export default function BookingPage() {
   const renderStep = () => {
     switch (step) {
       case 1: return <Step1Location selectedLocation={booking.location} onUpdate={update} onNext={next} />;
-      case 2: return <Step2DateSlot locationId={booking.location} selectedDate={booking.date} selectedSlot={booking.slot} onUpdate={update} onNext={next} />;
+      case 2: return <Step2DateSlot locationId={booking.location} selectedDate={booking.date} selectedSlot={booking.slot} bookingId={booking.bookingId} onUpdate={update} onNext={next} />;
       case 3: return <Step3Package selectedPackage={booking.package} onUpdate={update} onNext={next} />;
       case 4: return <Step4Balloon selectedColor={booking.balloonColor} onUpdate={update} onNext={next} />;
       case 5: return <Step5Cake selectedCake={booking.cakeOption} sparklers={booking.sparklers} eggless={booking.eggless} cakeMessage={booking.customer.cakeMessage} customer={booking.customer} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
@@ -110,6 +119,9 @@ export default function BookingPage() {
 
   return (
     <div className="relative min-h-[100vh] w-full bg-[#09090E] overflow-hidden selection:bg-[#00A7FA] selection:text-[#09090E]" data-lenis-prevent>
+      {step >= 3 && booking.holdExpiresAt && (
+        <HoldCountdownBanner holdExpiresAt={booking.holdExpiresAt} onExpired={handleHoldExpired} />
+      )}
       <ProgressBar currentStep={step} />
 
       <AnimatePresence mode="wait">

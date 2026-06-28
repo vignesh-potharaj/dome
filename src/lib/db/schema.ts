@@ -25,10 +25,10 @@ export const customers = pgTable('customers', {
 export const bookings = pgTable('bookings', {
   id: varchar('id', { length: 50 }).primaryKey(), // e.g. 'DC-K1J3H4'
   branchId: varchar('branch_id', { length: 50 }).references(() => branches.id).notNull(),
-  customerId: uuid('customer_id').references(() => customers.id).notNull(),
+  customerId: uuid('customer_id').references(() => customers.id),
   date: date('date').notNull(),
   slot: varchar('slot', { length: 50 }).notNull(), // e.g. '12:00 PM - 02:00 PM'
-  packageName: varchar('package_name', { length: 50 }).notNull(), // 'classic', 'premium', 'grand'
+  packageName: varchar('package_name', { length: 50 }), // 'classic', 'premium', 'grand'
   balloonColor: varchar('balloon_color', { length: 50 }),
   cakeOption: varchar('cake_option', { length: 100 }), // flavor/dietary option or 'none'
   sparklers: boolean('sparklers').default(false).notNull(),
@@ -37,14 +37,15 @@ export const bookings = pgTable('bookings', {
   addOns: jsonb('add_ons').default([]).notNull(), // array of addon ids: ['photography', 'banner']
   celebrantName: varchar('celebrant_name', { length: 100 }),
   specialNote: varchar('special_note', { length: 500 }),
-  guestCount: integer('guest_count').notNull(),
-  status: varchar('status', { length: 50 }).default('pending_payment').notNull(), // 'pending_payment', 'confirmed', 'cancelled', 'rescheduled'
-  totalPrice: integer('total_price').notNull(),
-  advancePaid: integer('advance_paid').notNull(),
+  guestCount: integer('guest_count').default(2),
+  status: varchar('status', { length: 50 }).default('pending_payment').notNull(), // 'temporary_hold', 'pending_payment', 'confirmed', 'cancelled', 'rescheduled'
+  totalPrice: integer('total_price').default(0),
+  advancePaid: integer('advance_paid').default(0),
   razorpayOrderId: varchar('razorpay_order_id', { length: 100 }),
   razorpayPaymentId: varchar('razorpay_payment_id', { length: 100 }),
   internalNotes: varchar('internal_notes', { length: 1000 }),
   balancePaid: boolean('balance_paid').default(false).notNull(),
+  holdExpiresAt: timestamp('hold_expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
