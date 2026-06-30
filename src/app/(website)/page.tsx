@@ -181,7 +181,7 @@ export default function DomeHomepage() {
       setCurrentIndex((prev) => prev + 1);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentIndex]);
 
   // Calculate card sizes and cylinder radius dynamically
   const isMobile = windowWidth <= 640;
