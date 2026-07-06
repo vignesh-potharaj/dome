@@ -158,11 +158,16 @@ export default function DomeHomepage() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1200);
+  const [windowHeight, setWindowHeight] = useState(900);
 
-  // Responsive width tracking
+  // Responsive size tracking
   useEffect(() => {
     setWindowWidth(window.innerWidth);
-    const handleResize = () => setWindowWidth(window.innerWidth);
+    setWindowHeight(window.innerHeight);
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -186,12 +191,15 @@ export default function DomeHomepage() {
   // Calculate card sizes and cylinder radius dynamically
   const isMobile = windowWidth <= 640;
   const isTablet = windowWidth > 640 && windowWidth <= 1024;
+  
+  // Detect zoomed or small vertical height screens on desktop (e.g. at 110% zoom or viewport height < 900px)
+  const isSmallHeightDesktop = !isMobile && !isTablet && windowHeight < 900;
 
-  const cardWidth = isMobile ? 365 : isTablet ? 740 : 1080;
-  const cardHeight = isMobile ? 210 : isTablet ? 420 : 615;
-  const radius = isMobile ? 260 : isTablet ? 480 : 700;
-  const perspective = isMobile ? 950 : isTablet ? 1300 : 1600;
-  const translateY = isMobile ? 80 : isTablet ? 145 : 230;
+  const cardWidth = isMobile ? 365 : isTablet ? 740 : (isSmallHeightDesktop ? 860 : 1080);
+  const cardHeight = isMobile ? 210 : isTablet ? 420 : (isSmallHeightDesktop ? 490 : 615);
+  const radius = isMobile ? 260 : isTablet ? 480 : (isSmallHeightDesktop ? 560 : 700);
+  const perspective = isMobile ? 950 : isTablet ? 1300 : (isSmallHeightDesktop ? 1400 : 1600);
+  const translateY = isMobile ? 80 : isTablet ? 145 : (isSmallHeightDesktop ? 160 : 230);
 
   return (
     <div className="relative min-h-screen bg-[#09090E] text-white font-sans overflow-x-hidden selection:bg-ape-blue selection:text-black">
