@@ -19,8 +19,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "APECHAIN",
-  description: "The Place to Ape",
+  title: "DOME CAFE",
+  description: "India's first dome-shaped celebration café",
 };
 
 const isSanityConfigured = !!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;

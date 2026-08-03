@@ -10,7 +10,7 @@ interface Particle {
   size: number;
 }
 
-export default function ApeCanvas() {
+export default function DomeCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
 

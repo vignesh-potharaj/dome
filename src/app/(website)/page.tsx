@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import ApeCanvas from '@/components/ApeCanvas';
+import DomeCanvas from '@/components/DomeCanvas';
 import InsideDome from '@/components/InsideDome';
 import FindUs from '@/components/FindUs';
 import ReviewsStrip from '@/components/ReviewsStrip';
 
-// Occasions data matching the ApeChain layout
+// Occasions data matching the Dome Cafe layout
 const occasions = [
   {
     name: 'DOME CAFE',
@@ -141,7 +141,7 @@ const PackageCard = ({ pkg, isFeatured = false }: { pkg: PkgType; isFeatured?: b
             {pkg.price}
           </span>
         </div>
-        <h3 className="font-manuka text-2xl font-bold uppercase text-white group-hover:text-ape-blue transition-colors">
+        <h3 className="font-manuka text-2xl font-bold uppercase text-white group-hover:text-dome-blue transition-colors">
           {pkg.name}
         </h3>
         <p className="text-xs text-white/60 leading-relaxed uppercase tracking-wider font-light">
@@ -202,9 +202,9 @@ export default function DomeHomepage() {
   const translateY = isMobile ? 80 : isTablet ? 145 : (isSmallHeightDesktop ? 160 : 230);
 
   return (
-    <div className="relative min-h-screen bg-[#09090E] text-white font-sans overflow-x-hidden selection:bg-ape-blue selection:text-black">
+    <div className="relative min-h-screen bg-[#09090E] text-white font-sans overflow-x-hidden selection:bg-dome-blue selection:text-black">
       {/* 3D Interactive Background Canvas */}
-      <ApeCanvas />
+      <DomeCanvas />
 
       <style>{`
         .carousel-container {
@@ -218,7 +218,7 @@ export default function DomeHomepage() {
         {/* Hamburger Menu Toggle (Mobile) */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden z-50 p-2 text-white hover:text-ape-blue transition-colors"
+          className="md:hidden z-50 p-2 text-white hover:text-dome-blue transition-colors"
           aria-label="Toggle Menu"
         >
           {menuOpen ? (
@@ -236,7 +236,7 @@ export default function DomeHomepage() {
         </button>
 
         {/* Brand Text Logo in Manuka Font */}
-        <a href="/" className="z-40 font-manuka text-3xl tracking-[0.2em] text-white hover:text-ape-blue transition-colors duration-300">
+        <a href="/" className="z-40 font-manuka text-3xl tracking-[0.2em] text-white hover:text-dome-blue transition-colors duration-300">
           DOME CAFE
         </a>
 
@@ -351,7 +351,7 @@ export default function DomeHomepage() {
               <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-4 pointer-events-auto">
                 <button
                   onClick={() => setCurrentIndex((prev) => prev + 1)}
-                  className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-ape-blue hover:border-ape-blue transition-all duration-300 cursor-pointer"
+                  className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-dome-blue hover:border-dome-blue transition-all duration-300 cursor-pointer"
                   aria-label="Next Slide"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -360,7 +360,7 @@ export default function DomeHomepage() {
                 </button>
                 <button
                   onClick={() => setCurrentIndex((prev) => prev - 1)}
-                  className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-ape-blue hover:border-ape-blue transition-all duration-300 cursor-pointer"
+                  className="w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:text-dome-blue hover:border-dome-blue transition-all duration-300 cursor-pointer"
                   aria-label="Previous Slide"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -473,7 +473,7 @@ export default function DomeHomepage() {
             {/* Left Side: Spotlight Title & Content */}
             <div className="lg:col-span-7 flex flex-col items-start gap-8">
               <div className="flex items-center gap-2">
-                <span className="font-manuka text-xl text-ape-blue tracking-widest font-bold">SPOTLIGHT</span>
+                <span className="font-manuka text-xl text-dome-blue tracking-widest font-bold">SPOTLIGHT</span>
               </div>
               <h2 className="font-manuka text-5xl md:text-7xl lg:text-8xl leading-none text-white font-bold select-none tracking-tight">
                 Where Moments Shine & Memories Stay
