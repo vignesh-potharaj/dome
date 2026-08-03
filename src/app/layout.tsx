@@ -40,7 +40,7 @@ export default async function RootLayout({
       <head>
         <link rel="preload" as="image" href="/images/birthday_v3.png" />
         <link rel="preload" as="image" href="/images/anniversary.png" />
-        <link rel="preload" as="image" href="/images/genderreveal_v2.png" />
+        <link rel="preload" as="image" href="/images/babyshower_v3.png" />
         <link rel="preload" as="image" href="/images/celebrations.png" />
       </head>
       <body>

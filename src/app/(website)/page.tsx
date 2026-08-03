@@ -35,10 +35,10 @@ const occasions = [
     accent: '#FF375F', // Red
   },
   {
-    name: 'GENDER REVEAL',
+    name: 'BABY SHOWER',
     category: 'MOMENTS',
-    description: 'Reveal the big secret in a grand way! Custom colored balloons, background sparks, and thematic setups in a private celebration dome.',
-    image: '/images/genderreveal_v2.png',
+    description: 'Celebrate the mom-to-be and the new arrival! Elegant floral arrangements, custom pastel decorations, and a premium private dome dining experience.',
+    image: '/images/babyshower_v3.png',
     url: '/booking',
     accent: '#FF5E97', // Pink
   },
@@ -77,7 +77,7 @@ const packages = [
     category: 'RECOMMENDED',
     price: '₹8,999',
     description: 'Gourmet private dining package adding balloon stands, flower petal entrance, 2 cold fire crackers, and a 3-course meal (2 starters, 1 main, 2 desserts).',
-    image: '/images/genderreveal_v2.png',
+    image: '/images/babyshower_v3.png',
     url: '/booking',
     accent: '#FF5E97',
   },

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -63,21 +63,21 @@ const carouselSlides = [
   },
   {
     tag: "MOMENTS",
-    title: "GENDER REVEAL",
-    flourish: "boy or girl?",
-    description: "Reveal the big secret in a grand way! Custom colored balloons, background sparks, and thematic setups in a private celebration dome.",
+    title: "BABY SHOWER",
+    flourish: "celebrating new life",
+    description: "Celebrate the mom-to-be and the new arrival! Elegant floral arrangements, custom pastel decorations, and a premium private dome dining experience.",
     ctaLabel: "Book a Dome",
     ctaLink: "/booking",
-    image: "/images/genderreveal_v2.png",
-    thumbLabel: "Gender Reveal",
-    accentColor: "#FF5E97", // Pink & blue theme
-    badgeBg: "linear-gradient(90deg, rgba(255, 94, 151, 0.25) 0%, rgba(94, 185, 255, 0.25) 100%)",
+    image: "/images/babyshower_v3.png",
+    thumbLabel: "Baby Shower",
+    accentColor: "#FF5E97", // Baby shower theme
+    badgeBg: "linear-gradient(90deg, rgba(255, 94, 151, 0.25) 0%, rgba(232, 185, 106, 0.25) 100%)",
     badgeText: "#FFCCD8",
     glowColor: "rgba(255, 94, 151, 0.35)",
-    btnBg: "linear-gradient(90deg, #FF5E97 0%, #5EB9FF 100%)",
+    btnBg: "linear-gradient(90deg, #FF5E97 0%, #E8B96A 100%)",
     btnText: "#080604",
     glowStart: "rgba(255, 94, 151, 0.3)",
-    glowEnd: "rgba(94, 185, 255, 0.6)",
+    glowEnd: "rgba(232, 185, 106, 0.6)",
     isDualGlow: true,
   },
   {

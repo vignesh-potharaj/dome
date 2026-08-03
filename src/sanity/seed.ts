@@ -50,7 +50,7 @@ async function seed() {
   const domeAssetId = await uploadImage('dome.png');
   const birthdayAssetId = await uploadImage('birthday_v3.png');
   const anniversaryAssetId = await uploadImage('anniversary.png');
-  const genderrevealAssetId = await uploadImage('genderreveal_v2.png');
+  const babyshowerAssetId = await uploadImage('babyshower_v3.png');
   const celebrationsAssetId = await uploadImage('celebrations.png');
 
   // Helper for image reference
@@ -95,10 +95,10 @@ async function seed() {
       _id: 'slide-3',
       _type: 'heroSection',
       title: 'YOU LOVE MOST',
-      subtitle: 'Anniversaries · Gender Reveals · Romantic Dinners',
+      subtitle: 'Anniversaries · Baby Showers · Romantic Dinners',
       italicText: 'FOR THE ONES',
       currentImage: imageRef(anniversaryAssetId),
-      nextImage: imageRef(genderrevealAssetId),
+      nextImage: imageRef(babyshowerAssetId),
       isFirst: false,
       showButtons: true,
       order: 3,
@@ -106,10 +106,10 @@ async function seed() {
     {
       _id: 'slide-4',
       _type: 'heroSection',
-      title: 'REVEAL',
-      subtitle: 'Magical gender reveal celebrations',
-      italicText: 'THE BIG',
-      currentImage: imageRef(genderrevealAssetId),
+      title: 'SHOWER',
+      subtitle: 'Magical baby shower celebrations',
+      italicText: 'BABY',
+      currentImage: imageRef(babyshowerAssetId),
       nextImage: imageRef(celebrationsAssetId),
       isFirst: false,
       showButtons: false,
