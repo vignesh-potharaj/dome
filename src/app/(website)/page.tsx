@@ -574,7 +574,9 @@ export default function DomeHomepage() {
       <footer id="footer" className="relative z-10 border-t border-white/5 py-12 px-6 md:px-12 bg-black">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            <span className="font-manuka text-lg uppercase text-white/40 tracking-wider">© 2026 DOME CAFE HYDERABAD</span>
+            <span className="font-sans font-light text-xs text-white/40 tracking-wider">
+              Dome Cafe is a unit of AVYANA. All rights reserved.
+            </span>
           </div>
           <div className="flex gap-8">
             {['Instagram', 'Location', 'Packages', 'Booking'].map((link) => {

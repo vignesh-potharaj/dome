@@ -44,7 +44,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-[rgba(201,151,58,0.1)] flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="font-sans font-light text-[11px] text-[#B8A882] tracking-wider">
-          © 2025 DOME CAFE HYDERABAD. ALL RIGHTS RESERVED.
+          Dome Cafe is a unit of AVYANA. All rights reserved.
         </p>
         <div className="flex gap-6">
           <Link href="#" className="font-sans font-light text-[11px] text-[#B8A882] hover:text-[#C9973A] transition-colors">Privacy Policy</Link>
