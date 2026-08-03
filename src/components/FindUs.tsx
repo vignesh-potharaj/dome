@@ -12,7 +12,7 @@ const locations = [
   },
   {
     area: 'KOKAPET',
-    address: 'Plot 4, Survey 160, Brundavan Colony, 60 Feet Road, Narsingi',
+    address: 'AVYANA (Dome Cafe)Plot No. 4, Sy. No. 160, 60 Ft Rd, Brundavan Colony, Beside Ratnadeep Supermarket, Kokapet, Narsingi, Rangareddy, Telangana - 500075',
     hours: '11:30 AM – 1:00 AM',
     note: 'Continental & Italian · Late night',
     mapsUrl: 'https://maps.google.com/?q=Dome+Cafe+Kokapet+Hyderabad',
