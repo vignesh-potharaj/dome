@@ -1,15 +1,35 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { confirmBookingPayment } from '@/lib/db/booking-queries';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { bookingId, razorpayPaymentId, razorpayOrderId } = body;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return NextResponse.json({ error: 'Razorpay secret key missing on server' }, { status: 500 });
+    }
 
-    if (!bookingId || !razorpayPaymentId || !razorpayOrderId) {
-      return NextResponse.json({ error: 'Missing transaction details' }, { status: 400 });
+    const body = await request.json();
+    const { bookingId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = body;
+
+    if (!bookingId || !razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+      return NextResponse.json({ error: 'Missing required transaction fields or signature.' }, { status: 400 });
+    }
+
+    // Signature verification algorithm: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
+    const generatedSignature = crypto
+      .createHmac('sha256', keySecret)
+      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+      .digest('hex');
+
+    if (generatedSignature !== razorpaySignature) {
+      console.warn(`Payment signature mismatch for booking ${bookingId}`);
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Invalid payment signature. Payment verification failed.' 
+      }, { status: 400 });
     }
 
     const updatedBooking = await db.transaction(async (tx) => {
@@ -36,3 +56,4 @@ export async function POST(request: Request) {
     }, { status: 500 });
   }
 }
+

@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
+import Razorpay from 'razorpay';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
-import { getOrCreateCustomer, createPendingBooking } from '@/lib/db/booking-queries';
+import { getOrCreateCustomer, createPendingBooking, calculateTotalPrice } from '@/lib/db/booking-queries';
 
 export async function POST(request: Request) {
   try {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+      return NextResponse.json({ error: 'Razorpay credentials missing on server' }, { status: 500 });
+    }
+
     const body = await request.json();
     const { booking } = body;
 
@@ -29,6 +37,54 @@ export async function POST(request: Request) {
     if (!location || !date || !slot || !packageName || !customer || !customer.phone || !customer.name) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Calculate advance price and validate >= 100 paise (₹1)
+    const totalPrice = calculateTotalPrice({
+      packageName,
+      cakeOption,
+      eggless: !!eggless,
+      sparklers: !!sparklers,
+      addOns: addOns || [],
+      ledName
+    });
+    const advancePaid = Math.floor(totalPrice / 2);
+    const amountInPaise = Math.round(advancePaid * 100);
+
+    if (amountInPaise < 100) {
+      return NextResponse.json({ error: 'Order amount must be at least ₹1 (100 paise).' }, { status: 400 });
+    }
+
+    // Initialize Razorpay SDK
+    const razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+
+    // Create real Razorpay Order
+    let razorpayOrder;
+    try {
+      razorpayOrder = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: `rcpt_${Date.now().toString(36)}`,
+        notes: {
+          location,
+          packageName,
+          customerName: customer.name,
+          customerPhone: customer.phone,
+        },
+      });
+    } catch (rzpErr: any) {
+      console.error('Razorpay Order Creation Failed:', rzpErr);
+      if (rzpErr.statusCode === 401 || rzpErr.status === 401) {
+        return NextResponse.json({ error: 'Razorpay authentication failed. Invalid API keys.' }, { status: 401 });
+      }
+      return NextResponse.json({ 
+        error: rzpErr.description || rzpErr.message || 'Failed to create payment order with Razorpay.' 
+      }, { status: 500 });
+    }
+
+    const razorpayOrderId = razorpayOrder.id;
 
     // Format date correctly (handle Date object strings like "2026-06-16T12:00:00.000Z" or similar)
     let dateStr = date;
@@ -66,10 +122,7 @@ export async function POST(request: Request) {
       const messageOnCake = customer.cakeMessage || null;
       const specialNote = customer.specialNote || null;
 
-      // 4. Create pending booking record
-      // We generate the razorpayOrderId here
-      const razorpayOrderId = `order_${Math.random().toString(36).substring(2, 12)}`;
-
+      // 4. Create pending booking record with real razorpayOrderId
       const dbBooking = await createPendingBooking(tx, {
         branchId: location,
         customerId: dbCustomer.id,
@@ -110,3 +163,4 @@ export async function POST(request: Request) {
     }, { status: 500 });
   }
 }
+

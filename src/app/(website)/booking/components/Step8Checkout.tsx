@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { QRCodeSVG } from 'qrcode.react';
 import BookingSummary from './BookingSummary';
 
 interface Step8CheckoutProps {
@@ -11,6 +10,21 @@ interface Step8CheckoutProps {
   onUpdate: (key: string, value: any) => void;
 }
 
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && (window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8CheckoutProps) {
   const [showPayment, setShowPayment] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -18,7 +32,104 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
   const [isCreatingPending, setIsCreatingPending] = useState(false);
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
   const [razorpayOrderId, setRazorpayOrderId] = useState('');
+  const [advanceAmount, setAdvanceAmount] = useState(totalPrice / 2);
   const [error, setError] = useState('');
+
+  const launchRazorpayModal = async (
+    orderId: string, 
+    bId: string, 
+    advance: number
+  ) => {
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded) {
+      setError('Failed to load Razorpay SDK. Please check your internet connection and try again.');
+      setIsCreatingPending(false);
+      return;
+    }
+
+    const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!key) {
+      setError('Razorpay public key is missing. Please configure NEXT_PUBLIC_RAZORPAY_KEY_ID.');
+      setIsCreatingPending(false);
+      return;
+    }
+
+    const options = {
+      key: key,
+      amount: Math.round(advance * 100),
+      currency: 'INR',
+      name: 'Dome Cafe Hyderabad',
+      description: `50% Advance Payment for ${booking.package?.toUpperCase() || 'Dome'} Booking`,
+      order_id: orderId,
+      handler: async function (response: {
+        razorpay_payment_id: string;
+        razorpay_order_id: string;
+        razorpay_signature: string;
+      }) {
+        setIsConfirmingPayment(true);
+        setError('');
+        try {
+          const verifyRes = await fetch('/api/booking/confirm-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId: bId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          if (!verifyData.success) {
+            throw new Error(verifyData.error || 'Payment verification failed');
+          }
+          console.log('📧 Confirmation email sent to:', booking.customer?.email);
+          console.log('📱 WhatsApp notification to:', booking.customer?.phone);
+          setShowConfirmation(true);
+        } catch (err: any) {
+          console.error(err);
+          setError(err.message || 'Payment confirmation failed. Please contact support.');
+          setShowPayment(true);
+        } finally {
+          setIsConfirmingPayment(false);
+          setIsCreatingPending(false);
+        }
+      },
+      prefill: {
+        name: booking.customer?.name || '',
+        email: booking.customer?.email || '',
+        contact: booking.customer?.phone || '',
+      },
+      notes: {
+        bookingId: bId,
+        location: booking.location,
+      },
+      theme: {
+        color: '#00A7FA',
+      },
+      modal: {
+        ondismiss: function () {
+          setIsCreatingPending(false);
+          setShowPayment(true);
+        },
+      },
+    };
+
+    try {
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        console.error('Payment failed:', response.error);
+        setError(`Payment failed: ${response.error.description || response.error.reason || 'Transaction declined'}`);
+        setShowPayment(true);
+        setIsCreatingPending(false);
+      });
+      rzp.open();
+    } catch (rzpErr: any) {
+      console.error('Failed to open Razorpay modal:', rzpErr);
+      setError('Could not open Razorpay checkout modal.');
+      setIsCreatingPending(false);
+    }
+  };
 
   const handleProceedToPayment = async () => {
     setIsCreatingPending(true);
@@ -42,46 +153,20 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
       }
       setBookingId(data.bookingId);
       setRazorpayOrderId(data.razorpayOrderId);
-      setShowPayment(true);
+      if (data.advancePaid) {
+        setAdvanceAmount(data.advancePaid);
+      }
+
+      await launchRazorpayModal(data.razorpayOrderId, data.bookingId, data.advancePaid || totalPrice / 2);
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An error occurred. Please try again.');
-    } finally {
       setIsCreatingPending(false);
     }
   };
 
-  const handleConfirm = async () => {
-    setIsConfirmingPayment(true);
-    setError('');
-    try {
-      const mockPaymentId = `pay_${Math.random().toString(36).substring(2, 14).toUpperCase()}`;
-      const response = await fetch('/api/booking/confirm-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookingId,
-          razorpayPaymentId: mockPaymentId,
-          razorpayOrderId,
-        }),
-      });
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to confirm payment');
-      }
-      console.log('📧 Confirmation email sent to:', booking.customer.email);
-      console.log('📱 WhatsApp notification to:', booking.customer.phone);
-      setShowConfirmation(true);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to confirm payment. Please contact support.');
-    } finally {
-      setIsConfirmingPayment(false);
-    }
-  };
-
   if (showConfirmation) {
-    const advance = totalPrice / 2;
+    const advance = advanceAmount;
     
     // Confetti pieces
     const confetti = Array.from({ length: 30 }).map((_, i) => ({
@@ -136,8 +221,8 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
         <div className="w-[100px] h-[1px] bg-[rgba(0,167,250,0.4)] mb-8" />
 
         <div className="bg-[rgba(0,167,250,0.03)] border border-[rgba(0,167,250,0.2)] rounded-[4px] p-6 w-full max-w-sm mb-8">
-          <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Location:</span><span className="text-[#FFFFFF] text-[13px]">{booking.location.toUpperCase()}</span></div>
-          <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Date:</span><span className="text-[#FFFFFF] text-[13px]">{booking.date?.toLocaleDateString()}</span></div>
+          <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Location:</span><span className="text-[#FFFFFF] text-[13px]">{booking.location?.toUpperCase()}</span></div>
+          <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Date:</span><span className="text-[#FFFFFF] text-[13px]">{booking.date?.toLocaleDateString ? booking.date.toLocaleDateString() : String(booking.date)}</span></div>
           <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Time:</span><span className="text-[#FFFFFF] text-[13px]">{booking.slot}</span></div>
           <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Package:</span><span className="text-[#FFFFFF] text-[13px] capitalize">{booking.package}</span></div>
           <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Guests:</span><span className="text-[#FFFFFF] text-[13px]">{booking.customer.guestCount}</span></div>
@@ -156,7 +241,7 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
           {booking.customer.cakeMessage && (
             <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Cake Message:</span><span className="text-[#FFFFFF] text-[13px]">{booking.customer.cakeMessage}</span></div>
           )}
-          {booking.addOns.length > 0 && (
+          {booking.addOns?.length > 0 && (
             <div className="flex justify-between mb-3"><span className="text-[#94A3B8] text-[13px]">Add-ons:</span><span className="text-[#FFFFFF] text-[13px]">{booking.addOns.length} selected</span></div>
           )}
 
@@ -294,7 +379,7 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
               transition: 'all 0.3s ease',
             }}
           >
-            {isCreatingPending ? 'Initializing...' : 'Proceed to Payment'}
+            {isCreatingPending ? 'Initializing Payment...' : 'Proceed to Payment'}
           </button>
 
         </div>
@@ -328,52 +413,39 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
 
             <div className="text-center mb-8">
               <p className="font-display font-semibold text-[56px] md:text-[72px] text-[#00A7FA] leading-none mb-2">
-                ₹{totalPrice / 2}
+                ₹{advanceAmount}
               </p>
               <p className="font-sans font-light text-[13px] text-[#94A3B8]">
                 50% advance — balance due at venue
               </p>
-            </div>
-
-            <div className="w-[200px] h-[200px] border-2 border-[rgba(0,167,250,0.3)] rounded-[8px] bg-[#FFFFFF] flex items-center justify-center mb-6">
-              <QRCodeSVG
-                value={`upi://pay?pa=domecafe@upi&pn=Dome Cafe Hyderabad&am=${totalPrice/2}&cu=INR`}
-                size={160}
-                bgColor="#FFFFFF"
-                fgColor="#09090E"
-              />
-            </div>
-
-            <div className="text-center mb-10">
-              <p className="font-sans font-medium text-[16px] text-[#00A7FA] tracking-[0.1em] mb-1">
-                domecafe@upi
-              </p>
-              <p className="font-sans font-light text-[12px] text-[#94A3B8]">
-                Scan with any UPI app — GPay, PhonePe, Paytm
-              </p>
+              {bookingId && (
+                <p className="font-sans text-[12px] text-[#00A7FA] mt-2">
+                  Booking Reference: {bookingId}
+                </p>
+              )}
             </div>
 
             {error && (
-              <div className="text-[#8B3A3A] text-[13px] font-sans mb-4">
+              <div className="text-[#8B3A3A] text-[13px] font-sans mb-6 text-center max-w-md">
                 ⚠ {error}
               </div>
             )}
 
             <button
-              disabled={isConfirmingPayment}
-              onClick={handleConfirm}
+              disabled={isCreatingPending || isConfirmingPayment}
+              onClick={() => launchRazorpayModal(razorpayOrderId, bookingId, advanceAmount)}
               style={{
                 padding: '16px 56px',
-                background: isConfirmingPayment ? 'rgba(0,167,250,0.2)' : '#00A7FA',
-                color: isConfirmingPayment ? 'rgba(0,167,250,0.4)' : '#09090E',
+                background: (isCreatingPending || isConfirmingPayment) ? 'rgba(0,167,250,0.2)' : '#00A7FA',
+                color: (isCreatingPending || isConfirmingPayment) ? 'rgba(0,167,250,0.4)' : '#09090E',
                 fontFamily: 'Inter', fontWeight: 500, fontSize: '12px',
                 letterSpacing: '0.2em', textTransform: 'uppercase',
                 border: 'none', borderRadius: '2px',
-                cursor: isConfirmingPayment ? 'not-allowed' : 'pointer',
+                cursor: (isCreatingPending || isConfirmingPayment) ? 'not-allowed' : 'pointer',
               }}
               className="hover:bg-[#89D0FF] transition-colors mb-12"
             >
-              {isConfirmingPayment ? 'Verifying...' : "✓ I've Completed the Payment"}
+              {isConfirmingPayment ? 'Verifying Payment...' : 'Pay with Razorpay'}
             </button>
             
           </motion.div>
@@ -383,3 +455,4 @@ export default function Step8Checkout({ booking, totalPrice, onUpdate }: Step8Ch
     </div>
   );
 }
+
