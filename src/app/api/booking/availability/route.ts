@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { checkSlotAvailability } from '@/lib/db/booking-queries';
+import { handleApiError } from '@/lib/api-response';
 
 const allSlots = [
   '5:00 PM – 6:30 PM',
@@ -59,10 +60,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ success: true, slots: results }, { headers: corsHeaders() });
   } catch (error: any) {
-    console.error('Error fetching availability:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch availability' },
-      { status: 500, headers: corsHeaders() }
-    );
+    return handleApiError('fetching availability', error, 500, corsHeaders());
   }
 }
+

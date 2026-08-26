@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { createOrUpdateSlotHold } from '@/lib/db/booking-queries';
+import { handleApiError } from '@/lib/api-response';
 
 function corsHeaders() {
   return {
@@ -51,10 +52,7 @@ export async function POST(request: Request) {
       { headers: corsHeaders() }
     );
   } catch (error: any) {
-    console.error('Error holding slot:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to hold slot' },
-      { status: 400, headers: corsHeaders() }
-    );
+    return handleApiError('holding slot', error, 400, corsHeaders());
   }
 }
+

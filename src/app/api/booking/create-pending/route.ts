@@ -3,6 +3,7 @@ import Razorpay from 'razorpay';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { getOrCreateCustomer, createPendingBooking, calculateTotalPrice } from '@/lib/db/booking-queries';
+import { handleApiError } from '@/lib/api-response';
 
 export async function POST(request: Request) {
   try {
@@ -156,11 +157,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, ...result });
 
   } catch (error: any) {
-    console.error('Error in create-pending route:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message || 'An error occurred during booking creation.' 
-    }, { status: 500 });
+    return handleApiError('create-pending booking', error, 500);
   }
 }
+
 

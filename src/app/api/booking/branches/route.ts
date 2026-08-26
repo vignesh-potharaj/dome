@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { branches } from '@/lib/db/schema';
+import { handleApiError } from '@/lib/api-response';
 
 export async function GET() {
   try {
@@ -13,10 +14,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, branches: list });
   } catch (error: any) {
-    console.error('Error fetching branches:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch branches' },
-      { status: 500 }
-    );
+    return handleApiError('fetching branches', error, 500);
   }
 }
+

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 import { confirmBookingPayment } from '@/lib/db/booking-queries';
+import { handleApiError } from '@/lib/api-response';
 
 export async function POST(request: Request) {
   try {
@@ -49,11 +50,8 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    console.error('Error in confirm-payment route:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error.message || 'An error occurred during payment confirmation.' 
-    }, { status: 500 });
+    return handleApiError('confirm-payment', error, 500);
   }
 }
+
 

@@ -25,6 +25,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
   const [slotsAvailability, setSlotsAvailability] = useState<Record<string, { available: boolean; reason?: string }>>({});
   const [loading, setLoading] = useState(false);
   const [holding, setHolding] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedDate || !locationId) {
@@ -34,6 +35,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
 
     async function fetchAvailability() {
       setLoading(true);
+      setErrorMsg(null);
       try {
         const dateStr = selectedDate instanceof Date 
           ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
@@ -47,10 +49,14 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
           setSlotsAvailability(data.slots);
         } else {
           setSlotsAvailability({});
+          if (data.error) {
+            setErrorMsg(data.error);
+          }
         }
       } catch (err) {
         console.error('Error fetching slot availability:', err);
         setSlotsAvailability({});
+        setErrorMsg('Unable to connect to the booking service. Please check network connection.');
       } finally {
         setLoading(false);
       }
@@ -63,6 +69,7 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
     if (!locationId || !selectedDate || !selectedSlot) return;
 
     setHolding(true);
+    setErrorMsg(null);
     try {
       const dateStr = selectedDate instanceof Date 
         ? `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
@@ -85,22 +92,34 @@ export default function Step2DateSlot({ locationId, selectedDate, selectedSlot, 
         onUpdate('holdExpiresAt', data.holdExpiresAt);
         onNext();
       } else {
-        alert(data.error || 'Failed to hold slot. Please select another time.');
+        setErrorMsg(data.error || 'Failed to hold slot. Please select another time.');
       }
     } catch (err) {
       console.error('Error holding slot:', err);
-      alert('An error occurred while reserving the slot. Please try again.');
+      setErrorMsg('An error occurred while reserving the slot. Please try again.');
     } finally {
       setHolding(false);
     }
   };
 
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[100vh] w-full pt-[64px] px-6 pb-24">
       
-      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#FFFFFF] text-center mb-16">
+      <h2 className="font-display font-light text-[32px] md:text-[48px] text-[#FFFFFF] text-center mb-8">
         PICK YOUR DATE & TIME
       </h2>
+
+      {errorMsg && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-xl mb-8 p-4 rounded-[4px] bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)] text-[#F87171] text-center text-[13px] font-sans"
+        >
+          {errorMsg}
+        </motion.div>
+      )}
+
 
       <div className="flex flex-col md:flex-row gap-16 md:gap-24 w-full max-w-5xl justify-center items-start">
         
