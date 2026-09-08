@@ -46,6 +46,9 @@ export const bookings = pgTable('bookings', {
   internalNotes: varchar('internal_notes', { length: 1000 }),
   balancePaid: boolean('balance_paid').default(false).notNull(),
   holdExpiresAt: timestamp('hold_expires_at'),
+  phoneVerified: boolean('phone_verified').default(false).notNull(),
+  phoneVerifiedAt: timestamp('phone_verified_at'),
+  phoneVerifiedNumber: varchar('phone_verified_number', { length: 20 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

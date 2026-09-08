@@ -299,6 +299,9 @@ export async function createPendingBooking(
     guestCount: number;
     razorpayOrderId?: string | null;
     existingBookingId?: string | null;
+    phoneVerified?: boolean;
+    phoneVerifiedAt?: Date | null;
+    phoneVerifiedNumber?: string | null;
   }
 ) {
   // Double check availability (exclude existingBookingId if updating)
@@ -345,6 +348,9 @@ export async function createPendingBooking(
           advancePaid,
           razorpayOrderId: data.razorpayOrderId || null,
           balancePaid: false,
+          phoneVerified: data.phoneVerified ?? false,
+          phoneVerifiedAt: data.phoneVerifiedAt ?? null,
+          phoneVerifiedNumber: data.phoneVerifiedNumber || null,
         })
         .where(eq(bookings.id, data.existingBookingId))
         .returning();
@@ -376,6 +382,9 @@ export async function createPendingBooking(
         advancePaid,
         razorpayOrderId: data.razorpayOrderId || null,
         balancePaid: false,
+        phoneVerified: data.phoneVerified ?? false,
+        phoneVerifiedAt: data.phoneVerifiedAt ?? null,
+        phoneVerifiedNumber: data.phoneVerifiedNumber || null,
       })
       .returning();
     booking = inserted;

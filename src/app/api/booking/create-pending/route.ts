@@ -142,6 +142,11 @@ export async function POST(request: Request) {
         guestCount: parseInt(customer.guestCount, 10) || 2,
         razorpayOrderId,
         existingBookingId: booking.bookingId || null,
+        phoneVerified: customer.phoneVerified ?? booking.phoneVerified ?? false,
+        phoneVerifiedAt: (customer.phoneVerifiedAt || booking.phoneVerifiedAt)
+          ? new Date(customer.phoneVerifiedAt || booking.phoneVerifiedAt)
+          : (customer.phoneVerified || booking.phoneVerified) ? new Date() : null,
+        phoneVerifiedNumber: customer.phoneVerifiedNumber || customer.phone || null,
       });
 
       return {

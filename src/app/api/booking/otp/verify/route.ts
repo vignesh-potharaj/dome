@@ -1,75 +1,67 @@
 import { NextResponse } from 'next/server';
+import { validateOtp } from '@/lib/message-central';
 import { db } from '@/lib/db';
-import { sql, eq, and, gt } from 'drizzle-orm';
-import { otpSessions, customers } from '@/lib/db/schema';
+import { sql, eq } from 'drizzle-orm';
+import { customers } from '@/lib/db/schema';
 
 export async function POST(request: Request) {
   try {
-    const { phone, code } = await request.json();
+    const { verificationId, code, phone } = await request.json();
 
-    if (!phone || !code) {
-      return NextResponse.json({ error: 'Phone number and verification code are required' }, { status: 400 });
+    if (!verificationId || !code) {
+      return NextResponse.json(
+        { success: false, error: 'Verification session identifier and verification code are required' },
+        { status: 400 }
+      );
     }
 
-    const result = await db.transaction(async (tx) => {
-      // Bypass RLS
-      await tx.execute(sql`SELECT set_config('app.current_role', 'super_admin', true)`);
+    const validation = await validateOtp(verificationId, code);
 
-      // Find an unverified, unexpired session for this phone and code
-      const sessions = await tx.select()
-        .from(otpSessions)
-        .where(
-          and(
-            eq(otpSessions.phone, phone),
-            eq(otpSessions.code, code),
-            eq(otpSessions.verified, false),
-            gt(otpSessions.expiresAt, new Date())
-          )
-        )
-        .limit(1);
+    if (!validation.verified) {
+      return NextResponse.json(
+        {
+          success: false,
+          verified: false,
+          error: validation.error || 'Invalid or expired verification code',
+          code: validation.code,
+        },
+        { status: 400 }
+      );
+    }
 
-      if (sessions.length === 0) {
-        return { success: false, error: 'Invalid or expired verification code' };
+    let customerProfile = null;
+    if (phone) {
+      try {
+        const result = await db.transaction(async (tx) => {
+          await tx.execute(sql`SELECT set_config('app.current_role', 'super_admin', true)`);
+          const existingCustomers = await tx
+            .select()
+            .from(customers)
+            .where(eq(customers.phone, phone))
+            .limit(1);
+
+          return existingCustomers[0] || null;
+        });
+
+        if (result) {
+          customerProfile = {
+            name: result.name,
+            email: result.email,
+            occasions: result.occasions,
+          };
+        }
+      } catch (dbErr) {
+        console.warn('Could not query customer profile during OTP verify:', dbErr);
       }
+    }
 
-      const session = sessions[0];
-
-      // Mark the OTP session as verified
-      await tx.update(otpSessions)
-        .set({ verified: true })
-        .where(eq(otpSessions.id, session.id));
-
-      // Retrieve customer profile if they exist in the DB
-      const existingCustomers = await tx.select()
-        .from(customers)
-        .where(eq(customers.phone, phone))
-        .limit(1);
-
-      if (existingCustomers.length > 0) {
-        const customer = existingCustomers[0];
-        return {
-          success: true,
-          customer: {
-            name: customer.name,
-            email: customer.email,
-            occasions: customer.occasions,
-          }
-        };
-      }
-
-      return {
-        success: true,
-        customer: null
-      };
+    return NextResponse.json({
+      success: true,
+      verified: true,
+      customer: customerProfile,
     });
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result);
   } catch (error: any) {
-    console.error('Error verifying OTP:', error);
+    console.error('Error verifying OTP in booking route:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to verify OTP' },
       { status: 500 }
