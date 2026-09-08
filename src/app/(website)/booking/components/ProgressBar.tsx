@@ -4,13 +4,22 @@ import Link from 'next/link';
 
 interface ProgressBarProps {
   currentStep: number;
+  cakeOption?: string | null;
 }
 
-export default function ProgressBar({ currentStep }: ProgressBarProps) {
-  const steps = [
+export default function ProgressBar({ currentStep, cakeOption }: ProgressBarProps) {
+  const isNoCake = cakeOption === 'none';
+
+  const steps = isNoCake ? [
     'Location', 'Date & Slot', 'Package', 'Balloon',
     'Cake', 'Add-ons', 'Details', 'Checkout'
+  ] : [
+    'Location', 'Date & Slot', 'Package', 'Balloon',
+    'Cake', 'Customise', 'Add-ons', 'Details', 'Checkout'
   ];
+
+  // Adjust active step number for display when cake is skipped
+  const activeStep = isNoCake && currentStep > 5 ? currentStep - 1 : currentStep;
   
   return (
     <nav style={{
@@ -34,9 +43,9 @@ export default function ProgressBar({ currentStep }: ProgressBarProps) {
       <div className="flex items-center gap-4 hidden md:flex">
         {steps.map((label, index) => {
           const stepNumber = index + 1;
-          const isCompleted = stepNumber < currentStep;
-          const isActive = stepNumber === currentStep;
-          const isUpcoming = stepNumber > currentStep;
+          const isCompleted = stepNumber < activeStep;
+          const isActive = stepNumber === activeStep;
+          const isUpcoming = stepNumber > activeStep;
 
           return (
             <div key={stepNumber} className="flex items-center group relative">
@@ -72,9 +81,9 @@ export default function ProgressBar({ currentStep }: ProgressBarProps) {
         })}
       </div>
 
-      {/* Right: Step X of 8 */}
+      {/* Right: Step X of total */}
       <div className="font-sans font-light text-[12px] text-[#94A3B8]">
-        Step {currentStep} of 8
+        Step {activeStep} of {steps.length}
       </div>
     </nav>
   );

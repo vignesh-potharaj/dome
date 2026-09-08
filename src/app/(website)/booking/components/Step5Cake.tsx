@@ -1,9 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import ToggleSwitch from './ToggleSwitch';
 
-const cakeFlavours = [
+export const cakeFlavours = [
   {
     id: 'none',
     name: 'No Cake',
@@ -64,9 +63,6 @@ const cakeFlavours = [
 
 interface Step5CakeProps {
   selectedCake: string | null;
-  sparklers: boolean;
-  eggless: boolean;
-  cakeMessage: string;
   customer: any;
   selectedPackage: string | null;
   onUpdate: (key: string, value: any) => void;
@@ -75,19 +71,12 @@ interface Step5CakeProps {
 
 export default function Step5Cake({ 
   selectedCake, 
-  sparklers, 
-  eggless, 
-  cakeMessage,
   customer,
   selectedPackage, 
   onUpdate, 
   onNext 
 }: Step5CakeProps) {
-  const isCakeIncluded = true; // All new packages include cake
-  const isSparklerFree = selectedPackage ? ['vibe', 'magic', 'elite', 'luxury'].includes(selectedPackage) : false;
-  const hasCakeSelected = selectedCake && selectedCake !== 'none';
-  
-  const canContinue = selectedCake && (selectedCake === 'none' || cakeMessage.trim() !== '');
+  const canContinue = !!selectedCake;
 
   // Get package specific cake size for the message
   const cakeSizeText = selectedPackage && ['elite', 'luxury'].includes(selectedPackage) ? '1 Kg' : '500g';
@@ -164,62 +153,6 @@ export default function Step5Cake({
         })}
       </div>
 
-      {hasCakeSelected && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-6 mt-12 bg-[rgba(0,167,250,0.03)] border border-[rgba(0,167,250,0.15)] px-8 py-6 rounded-[4px] w-full max-w-xl"
-        >
-          {/* Eggless & Sparklers Toggles */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-4">
-              <span className="font-sans text-[13px] text-[#94A3B8]">
-                Eggless Cake
-              </span>
-              <ToggleSwitch
-                value={eggless}
-                onChange={v => onUpdate('eggless', v)}
-              />
-              <span className="font-sans font-medium text-[12px] text-[#00A7FA]">
-                +₹250
-              </span>
-            </div>
-
-            <div className="hidden sm:block w-[1px] h-6 bg-[rgba(0,167,250,0.2)]" />
-
-            <div className="flex items-center gap-4">
-              <span className="font-sans text-[13px] text-[#94A3B8]">
-                Add Sparkler Candle
-              </span>
-              <ToggleSwitch
-                value={sparklers}
-                onChange={v => onUpdate('sparklers', v)}
-              />
-              <span className="font-sans font-medium text-[12px] text-[#00A7FA]">
-                {isSparklerFree ? '+₹0 (Included)' : '+₹149'}
-              </span>
-            </div>
-          </div>
-
-          <div className="w-full h-[1px] bg-[rgba(0,167,250,0.15)]" />
-
-          {/* Cake Message Input */}
-          <div className="flex flex-col">
-            <label className="font-sans font-medium text-[11px] tracking-[0.2em] text-[#94A3B8] uppercase mb-2">
-              Message on Cake *
-            </label>
-            <input
-              type="text"
-              value={cakeMessage}
-              onChange={e => onUpdate('customer', { ...customer, cakeMessage: e.target.value })}
-              placeholder="e.g. Happy Birthday Priya"
-              maxLength={50}
-              className="w-full bg-[rgba(9,9,14,0.7)] border border-[rgba(0,167,250,0.4)] rounded-[2px] p-3 text-[#FFFFFF] font-sans text-[13px] outline-none focus:border-[#00A7FA]"
-            />
-          </div>
-        </motion.div>
-      )}
-
       {selectedCake && (
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -253,7 +186,7 @@ export default function Step5Cake({
             }}
             className={canContinue ? "hover:shadow-[0_0_40px_rgba(0,167,250,0.6)] transition-all duration-300" : "transition-all duration-300"}
           >
-            Continue →
+            {selectedCake === 'none' ? 'Continue to Add-ons →' : 'Continue to Customise →'}
           </motion.button>
         </motion.div>
       )}

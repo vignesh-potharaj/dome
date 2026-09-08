@@ -10,6 +10,7 @@ import Step2DateSlot from './components/Step2DateSlot';
 import Step3Package from './components/Step3Package';
 import Step4Balloon from './components/Step4Balloon';
 import Step5Cake from './components/Step5Cake';
+import Step5CakeCustomization from './components/Step5CakeCustomization';
 import Step6AddOns, { addOnsList } from './components/Step6AddOns';
 import Step7Details from './components/Step7Details';
 import Step8Checkout from './components/Step8Checkout';
@@ -53,9 +54,24 @@ export default function BookingPage() {
     }
   }, []);
 
-  const next = () => setStep(s => Math.min(s + 1, 8));
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const back = () => setStep(s => Math.max(s - 1, 1));
+  const next = () => {
+    setStep(s => {
+      if (s === 5 && booking.cakeOption === 'none') {
+        return 7; // Skip cake customization if "No Cake" selected
+      }
+      return Math.min(s + 1, 9);
+    });
+  };
+
+  const back = () => {
+    setStep(s => {
+      if (s === 7 && booking.cakeOption === 'none') {
+        return 5; // Return to cake selection skipping customization
+      }
+      return Math.max(s - 1, 1);
+    });
+  };
+
   const update = (key: string, value: any) => setBooking(b => ({ ...b, [key]: value }));
 
   const handleHoldExpired = () => {
@@ -109,10 +125,11 @@ export default function BookingPage() {
       case 2: return <Step2DateSlot locationId={booking.location} selectedDate={booking.date} selectedSlot={booking.slot} bookingId={booking.bookingId} onUpdate={update} onNext={next} />;
       case 3: return <Step3Package selectedPackage={booking.package} onUpdate={update} onNext={next} />;
       case 4: return <Step4Balloon selectedColor={booking.balloonColor} onUpdate={update} onNext={next} />;
-      case 5: return <Step5Cake selectedCake={booking.cakeOption} sparklers={booking.sparklers} eggless={booking.eggless} cakeMessage={booking.customer.cakeMessage} customer={booking.customer} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
-      case 6: return <Step6AddOns selectedAddOns={booking.addOns} ledName={booking.ledName} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
-      case 7: return <Step7Details booking={booking} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
-      case 8: return <Step8Checkout booking={booking} totalPrice={totalPrice} onUpdate={update} />;
+      case 5: return <Step5Cake selectedCake={booking.cakeOption} customer={booking.customer} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
+      case 6: return <Step5CakeCustomization selectedCake={booking.cakeOption} sparklers={booking.sparklers} eggless={booking.eggless} cakeMessage={booking.customer.cakeMessage} customer={booking.customer} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
+      case 7: return <Step6AddOns selectedAddOns={booking.addOns} ledName={booking.ledName} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
+      case 8: return <Step7Details booking={booking} totalPrice={totalPrice} onUpdate={update} onNext={next} />;
+      case 9: return <Step8Checkout booking={booking} totalPrice={totalPrice} onUpdate={update} />;
       default: return null;
     }
   };
@@ -122,7 +139,7 @@ export default function BookingPage() {
       {step >= 3 && booking.holdExpiresAt && (
         <HoldCountdownBanner holdExpiresAt={booking.holdExpiresAt} onExpired={handleHoldExpired} />
       )}
-      <ProgressBar currentStep={step} />
+      <ProgressBar currentStep={step} cakeOption={booking.cakeOption} />
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -133,8 +150,8 @@ export default function BookingPage() {
           transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
           className="absolute inset-0 overflow-y-auto"
         >
-          {/* Back button (hide on step 1 and step 8 if confirmation is shown, but for simplicity handled globally here) */}
-          {step > 1 && step < 8 && (
+          {/* Back button (hide on step 1 and step 9 if checkout) */}
+          {step > 1 && step < 9 && (
             <button 
               onClick={back}
               className="absolute top-[88px] left-6 md:left-12 text-[#94A3B8] font-sans text-[12px] uppercase tracking-[0.1em] hover:text-[#00A7FA] transition-colors z-50 flex items-center gap-2"
