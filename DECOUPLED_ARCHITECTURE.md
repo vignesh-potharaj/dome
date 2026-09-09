@@ -32,7 +32,6 @@ graph TD
     end
 
     subgraph ExternalServices [Third-Party Headless / API Services]
-        SanityCloud[Sanity Content Lake]
         Razorpay[Razorpay Payment API]
         WhatsApp[WhatsApp Business API]
         SMS[SMS Gateway API]
@@ -43,7 +42,6 @@ graph TD
     end
 
     %% Client Interactions
-    NextCustomer -->|Fetch Content| SanityCloud
     NextCustomer -->|API Requests| Gateway
     AdminFrontend -->|API Requests| Gateway
 
@@ -72,7 +70,7 @@ The frontend acts purely as a Consumer. It does not run server-side database scr
 
 ### Key Details
 * **Tech Stack**: Next.js (configured as client-only/Static Export) or a React SPA (Vite).
-* **Content Source**: Fetches static/marketing content (packages, branch details, balloon options, reviews) directly from the [Sanity Content Lake API](file:///c:/projects/dome/src/sanity/lib/client.ts) via read-only public tokens.
+* **Content Source**: Static/marketing content (packages, branch details, balloon options, reviews) bundled statically or fetched from the PostgreSQL database.
 * **State Management**: React state, context, or lightweight stores (e.g., Zustand) to handle the booking wizard.
 * **API Calls**: Communicates with the backend exclusively via an HTTPS client (like Axios or Fetch) using a base URL configured via environment variables (e.g., `NEXT_PUBLIC_API_URL`).
 
@@ -146,7 +144,6 @@ dome-project/
 | **Frontend** | Static/Edge CDN | Vercel / Netlify / Cloudflare | Global distribution, sub-millisecond load times. |
 | **Backend API** | VM / Container | Railway / Render / AWS ECS | Always-on services with connection pooling. |
 | **Database** | Managed Postgres | Supabase / Neon | Direct and transaction pooled connection options. |
-| **Content Lake** | Serverless CMS | Sanity.io Cloud | Global GraphQL/GROQ CDN API. |
 
 ---
 
@@ -156,9 +153,7 @@ dome-project/
    * Migrate the OTP dispatching, Razorpay setup, and booking database write commands from the frontend pages into a separate Express service (e.g., `services/core-backend`).
 2. **Update Frontend Calls**:
    * Replace all direct database queries or server actions in the customer app (e.g., checkout and booking pages) with async `fetch()` operations targeting the backend API.
-3. **Move CMS Studio**:
-   * Move the Sanity Studio configuration [sanity.config.ts](file:///c:/projects/dome/sanity.config.ts) out of the customer app and host it under its own workspace subdomain (e.g., `studio.domecafe.in`) or within the Admin Frontend to optimize bundle size and speed.
-4. **Secure Endpoints**:
+3. **Secure Endpoints**:
    * Implement JWT validation middleware on the Express backend and attach authorization headers to all customer and admin requests.
-5. **Set up CORS & Environment Variables**:
+4. **Set up CORS & Environment Variables**:
    * Configure backend environments with secrets (`DATABASE_URL`, `RAZORPAY_SECRET`, `WA_API_KEY`) and set public-facing API URLs (`NEXT_PUBLIC_API_URL`) on the frontends.

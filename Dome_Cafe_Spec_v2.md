@@ -222,12 +222,11 @@ The original vision proposed a direct WhatsApp trigger for anniversary reminders
 
 ## Part 4 — Technology Stack
 
-Clean separation of concerns: marketing content in a CMS, transactional data in a relational database.
+Clean separation of concerns: transactional data and business logic in a relational database.
 
 | Layer | Technology | What It Stores |
 |---|---|---|
 | Frontend | Next.js 14 + Tailwind CSS | Booking wizard, admin portal UI |
-| CMS | Sanity | Packages, balloon palettes, cake options, branch info, images |
 | Transactional DB | PostgreSQL + Prisma / Drizzle | Users, bookings, payments, WhatsApp logs, consent records |
 | Auth | Custom WhatsApp OTP + SMS fallback (MSG91) | Session management, OTP state |
 | Payments | Razorpay | Payment records, webhook events, transaction IDs |

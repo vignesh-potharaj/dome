@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { Antonio, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-
-import { draftMode } from "next/headers";
-import { VisualEditing } from "next-sanity/visual-editing";
-import { SanityLive } from "@/sanity/lib/live";
-
 const antonio = Antonio({
   variable: "--font-antonio",
   subsets: ["latin"],
@@ -23,15 +18,11 @@ export const metadata: Metadata = {
   description: "India's first dome-shaped celebration café",
 };
 
-const isSanityConfigured = !!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isDraftMode = (await draftMode()).isEnabled;
-
   return (
     <html
       lang="en"
@@ -45,8 +36,6 @@ export default async function RootLayout({
       </head>
       <body>
         {children}
-        {/* {isSanityConfigured && <SanityLive />} */}
-        {isSanityConfigured && isDraftMode && <VisualEditing />}
       </body>
     </html>
   );
