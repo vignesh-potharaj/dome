@@ -117,12 +117,44 @@ export default function BookingPage() {
     return packagePrice + cakePrice + sparklerPrice + addOnsTotal;
   };
 
+  const [pausedBranchAlert, setPausedBranchAlert] = useState<{
+    isOpen: boolean;
+    branchName: string;
+    phone: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!booking.location || step === 1) return;
+
+    async function verifyBranchStatus() {
+      try {
+        const res = await fetch('/api/booking/branches');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.branches)) {
+          const current = data.branches.find((b: any) => b.id === booking.location);
+          if (current && (!current.allowOnlineBookings || current.status === 'disabled')) {
+            // Location is no longer accepting online bookings: display friendly in-app modal
+            setPausedBranchAlert({
+              isOpen: true,
+              branchName: current.name,
+              phone: current.phone || '+91 98765 43210',
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Error verifying branch status:', err);
+      }
+    }
+
+    verifyBranchStatus();
+  }, [step, booking.location]);
+
   const totalPrice = calculateTotal(booking);
 
   const renderStep = () => {
     switch (step) {
       case 1: return <Step1Location selectedLocation={booking.location} onUpdate={update} onNext={next} />;
-      case 2: return <Step2DateSlot locationId={booking.location} selectedDate={booking.date} selectedSlot={booking.slot} bookingId={booking.bookingId} onUpdate={update} onNext={next} />;
+      case 2: return <Step2DateSlot locationId={booking.location} selectedDate={booking.date} selectedSlot={booking.slot} bookingId={booking.bookingId} onUpdate={update} onNext={next} onBack={back} />;
       case 3: return <Step3Package selectedPackage={booking.package} onUpdate={update} onNext={next} />;
       case 4: return <Step4Balloon selectedColor={booking.balloonColor} onUpdate={update} onNext={next} />;
       case 5: return <Step5Cake selectedCake={booking.cakeOption} customer={booking.customer} selectedPackage={booking.package} onUpdate={update} onNext={next} />;
@@ -163,6 +195,65 @@ export default function BookingPage() {
           {renderStep()}
         </motion.div>
       </AnimatePresence>
+
+      {/* Friendly Alert Modal when selected branch becomes paused mid-booking */}
+      {pausedBranchAlert?.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-lg p-8 md:p-10 rounded-[8px] bg-[#111625] border border-[#F59E0B]/40 shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_40px_rgba(245,158,11,0.15)] text-center flex flex-col items-center"
+          >
+            <div className="w-14 h-14 rounded-full bg-[#F59E0B]/15 border border-[#F59E0B]/30 flex items-center justify-center text-[#F59E0B] mb-5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z" />
+              </svg>
+            </div>
+
+            <span className="text-[11px] font-sans font-semibold tracking-[0.2em] uppercase text-[#F59E0B] mb-2">
+              ● Online Bookings Paused
+            </span>
+
+            <h3 className="font-display font-light text-[24px] md:text-[28px] text-white mb-3">
+              {pausedBranchAlert.branchName}
+            </h3>
+
+            <p className="font-sans font-light text-[14px] text-[#94A3B8] leading-relaxed mb-8 max-w-md">
+              Online bookings for {pausedBranchAlert.branchName} were just paused. Please call the branch directly to complete your reservation, or select another location.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
+              <a
+                href={`tel:${pausedBranchAlert.phone.replace(/\s+/g, '')}`}
+                className="flex items-center justify-center gap-2.5 w-full sm:w-auto py-3.5 px-6 rounded-[4px] bg-[#F59E0B] hover:bg-[#D97706] text-[#09090E] font-sans font-bold text-[12px] tracking-wider uppercase transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.25)] hover:shadow-[0_0_30px_rgba(245,158,11,0.45)]"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z" />
+                </svg>
+                <span>Call Us: {pausedBranchAlert.phone}</span>
+              </a>
+
+              <button
+                onClick={() => {
+                  setPausedBranchAlert(null);
+                  setBooking(prev => ({
+                    ...prev,
+                    location: null,
+                    date: null,
+                    slot: null,
+                    bookingId: null,
+                    holdExpiresAt: null,
+                  }));
+                  setStep(1);
+                }}
+                className="flex items-center justify-center w-full sm:w-auto py-3.5 px-6 rounded-[4px] border border-white/20 hover:border-white text-white font-sans font-semibold text-[12px] tracking-wider uppercase transition-all duration-300 bg-white/5 hover:bg-white/10"
+              >
+                Choose Another Location
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

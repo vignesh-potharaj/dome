@@ -48,6 +48,21 @@ export async function GET(request: Request) {
       // Bypass RLS for customer-facing flow
       await tx.execute(sql`SELECT set_config('app.current_role', 'super_admin', true)`);
 
+      // 1. Check if branch has online bookings paused
+      const branchInfo = await tx.query.branches.findFirst({
+        where: (branches: any, { eq }: any) => eq(branches.id, branchId),
+      });
+
+      if (branchInfo && branchInfo.allowOnlineBookings === false) {
+        return {
+          allowOnlineBookings: false,
+          branchName: branchInfo.name,
+          phone: branchInfo.phone,
+          error: `Online bookings are currently paused for ${branchInfo.name}. Please call us at ${branchInfo.phone || 'our branch'} to reserve.`,
+          slots: {},
+        };
+      }
+
       const slotsAvailability: Record<string, { available: boolean; reason?: string }> = {};
 
       for (const slot of allSlots) {
@@ -55,10 +70,15 @@ export async function GET(request: Request) {
         slotsAvailability[slot] = status;
       }
 
-      return slotsAvailability;
+      return {
+        allowOnlineBookings: true,
+        branchName: branchInfo?.name,
+        phone: branchInfo?.phone,
+        slots: slotsAvailability,
+      };
     });
 
-    return NextResponse.json({ success: true, slots: results }, { headers: corsHeaders() });
+    return NextResponse.json({ success: true, ...results }, { headers: corsHeaders() });
   } catch (error: any) {
     return handleApiError('fetching availability', error, 500, corsHeaders());
   }

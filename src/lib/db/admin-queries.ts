@@ -222,7 +222,14 @@ export async function unblockDate(
   });
 }
 
-// 6. Update Branch Settings
+// 6. Branch Settings & Operations
+export async function getAdminBranches(role: string, branchId: string | null) {
+  return await db.transaction(async (tx) => {
+    await setRlsContext(tx, role, branchId);
+    return await tx.select().from(branches).orderBy(branches.id);
+  });
+}
+
 export async function updateBranchSettings(
   role: string,
   branchId: string | null,
@@ -230,6 +237,8 @@ export async function updateBranchSettings(
   updates: {
     status?: 'active' | 'disabled';
     capacity?: number;
+    phone?: string;
+    allowOnlineBookings?: boolean;
   }
 ) {
   return await db.transaction(async (tx) => {
@@ -243,6 +252,25 @@ export async function updateBranchSettings(
     const [updated] = await tx.update(branches)
       .set(updates)
       .where(eq(branches.id, targetBranchId))
+      .returning();
+
+    return updated;
+  });
+}
+
+export async function bulkToggleBranchBookings(
+  role: string,
+  allowOnlineBookings: boolean
+) {
+  if (role !== 'super_admin') {
+    throw new Error('Unauthorized: Only super admins can bulk update all branches.');
+  }
+
+  return await db.transaction(async (tx) => {
+    await setRlsContext(tx, 'super_admin', null);
+
+    const updated = await tx.update(branches)
+      .set({ allowOnlineBookings })
       .returning();
 
     return updated;

@@ -123,11 +123,18 @@ export async function checkSlotAvailability(
     return { available: false, reason: `Date is blocked: ${blocked[0].reason || 'Private Event / Closure'}` };
   }
 
-  // Check if capacity is reached for this slot
-  // Get branch capacity
+  // Check if branch allows online bookings
   const branchList = await tx.query.branches.findFirst({
     where: (branches: any, { eq }: any) => eq(branches.id, branchId)
   });
+
+  if (branchList && branchList.allowOnlineBookings === false) {
+    return {
+      available: false,
+      reason: `Online bookings are currently paused for this location. Please call us directly at ${branchList.phone || 'our branch'} to reserve.`,
+    };
+  }
+
   const capacity = branchList?.capacity ?? 6;
 
   // Get active/confirmed/held bookings for this slot

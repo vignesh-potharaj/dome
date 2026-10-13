@@ -21,21 +21,24 @@ export async function PATCH(
   try {
     const admin = verifyAdminToken(request);
     const { id: targetBranchId } = await params;
-    const { status, capacity } = await request.json();
+    const { status, capacity, phone, allowOnlineBookings } = await request.json();
 
     const updated = await updateBranchSettings(
       admin.role,
       admin.branchId,
       targetBranchId,
-      { status, capacity }
+      { status, capacity, phone, allowOnlineBookings }
     );
 
     return NextResponse.json({ success: true, branch: updated }, { headers: corsHeaders() });
   } catch (error: any) {
     console.error('Error updating branch settings:', error);
+    const isAuth = error.message?.includes('token') || error.message?.includes('header');
+    const isForbidden = error.message?.includes('Unauthorized');
+    const status = isAuth ? 401 : isForbidden ? 403 : 500;
     return NextResponse.json(
       { success: false, error: error.message || 'Error occurred' },
-      { status: error.message?.includes('token') || error.message?.includes('header') ? 401 : 500, headers: corsHeaders() }
+      { status, headers: corsHeaders() }
     );
   }
 }
