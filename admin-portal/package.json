@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev apps/frontend",
-    "build": "next build apps/frontend",
-    "start": "next start apps/frontend"
+    "dev": "npm --prefix apps/frontend run dev",
+    "build": "npm --prefix apps/frontend run build",
+    "start": "npm --prefix apps/frontend run start"
   },
   "dependencies": {
     "next": "^13.0.0",
