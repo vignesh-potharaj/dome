@@ -18,6 +18,8 @@ async function seed() {
         name: 'Kokapet Branch',
         status: 'active',
         capacity: 6,
+        phone: '+91 98765 43210',
+        allowOnlineBookings: true,
       });
     }
 
@@ -28,6 +30,8 @@ async function seed() {
         name: 'Sainikpuri Branch',
         status: 'active',
         capacity: 6,
+        phone: '+91 98765 43211',
+        allowOnlineBookings: true,
       });
     }
 

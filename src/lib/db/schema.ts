@@ -7,6 +7,8 @@ export const branches = pgTable('branches', {
   name: varchar('name', { length: 100 }).notNull(),
   status: varchar('status', { length: 20 }).default('active').notNull(), // 'active', 'disabled'
   capacity: integer('capacity').default(6).notNull(), // capacity per slot
+  phone: varchar('phone', { length: 20 }), // Branch contact / calling number
+  allowOnlineBookings: boolean('allow_online_bookings').default(true).notNull(), // Toggle website booking intake
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
