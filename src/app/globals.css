@@ -92,8 +92,10 @@ button:hover .label__inner--clone {
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.spotlight-card:hover {
-  transform: perspective(800px) scale(1.52) rotateX(4deg) rotateY(-8deg) rotateZ(5deg) !important;
+@media (min-width: 1024px) {
+  .spotlight-card:hover {
+    transform: perspective(800px) scale(1.52) rotateX(4deg) rotateY(-8deg) rotateZ(5deg) !important;
+  }
 }
 
 @keyframes pulseGlow {

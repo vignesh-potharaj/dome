@@ -188,6 +188,18 @@ export default function DomeHomepage() {
     return () => clearInterval(interval);
   }, [currentIndex]);
 
+  // Lock background scroll when mobile navigation is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [menuOpen]);
+
   // Calculate card sizes and cylinder radius dynamically
   const isMobile = windowWidth <= 640;
   const isTablet = windowWidth > 640 && windowWidth <= 1024;
@@ -195,11 +207,20 @@ export default function DomeHomepage() {
   // Detect zoomed or small vertical height screens on desktop (e.g. at 110% zoom or viewport height < 900px)
   const isSmallHeightDesktop = !isMobile && !isTablet && windowHeight < 900;
 
-  const cardWidth = isMobile ? 365 : isTablet ? 740 : (isSmallHeightDesktop ? 860 : 1080);
-  const cardHeight = isMobile ? 210 : isTablet ? 420 : (isSmallHeightDesktop ? 490 : 615);
-  const radius = isMobile ? 260 : isTablet ? 480 : (isSmallHeightDesktop ? 560 : 700);
-  const perspective = isMobile ? 950 : isTablet ? 1300 : (isSmallHeightDesktop ? 1400 : 1600);
-  const translateY = isMobile ? 80 : isTablet ? 145 : (isSmallHeightDesktop ? 160 : 230);
+  // Base dimensions per viewport
+  const baseCardWidth = isMobile ? 365 : isTablet ? 740 : (isSmallHeightDesktop ? 860 : 1080);
+  const baseCardHeight = isMobile ? 210 : isTablet ? 420 : (isSmallHeightDesktop ? 490 : 615);
+  const baseRadius = isMobile ? 260 : isTablet ? 480 : (isSmallHeightDesktop ? 560 : 700);
+  const basePerspective = isMobile ? 950 : isTablet ? 1300 : (isSmallHeightDesktop ? 1400 : 1600);
+  const baseTranslateY = isMobile ? 80 : isTablet ? 145 : (isSmallHeightDesktop ? 160 : 230);
+
+  // Scaled up by 40% (+40%)
+  const scale = 1.4;
+  const cardWidth = Math.round(baseCardWidth * scale);
+  const cardHeight = Math.round(baseCardHeight * scale);
+  const radius = Math.round(baseRadius * scale);
+  const perspective = Math.round(basePerspective * scale);
+  const translateY = Math.round(baseTranslateY * scale);
 
   return (
     <div className="relative min-h-screen bg-[#09090E] text-white font-sans overflow-x-hidden selection:bg-dome-blue selection:text-black">
@@ -214,12 +235,12 @@ export default function DomeHomepage() {
       `}</style>
 
       {/* Header */}
-      <header className="fixed left-0 top-0 z-[99] flex w-full h-[80px] md:h-[100px] items-center justify-between px-6 md:px-12 backdrop-blur-md border-b border-white/5 bg-black/20">
+      <header className="fixed left-0 top-0 z-[99] flex w-full h-[56px] md:h-[60px] items-center justify-between px-6 md:px-6 lg:px-12 backdrop-blur-md border-b border-white/5 bg-black/20">
         {/* Hamburger Menu Toggle (Mobile) */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden z-50 p-2 text-white hover:text-dome-blue transition-colors"
-          aria-label="Toggle Menu"
+          aria-label={menuOpen ? 'Close Menu' : 'Open Menu'}
         >
           {menuOpen ? (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -236,20 +257,19 @@ export default function DomeHomepage() {
         </button>
 
         {/* Brand Text Logo in Manuka Font */}
-        <a href="/" className="z-40 font-manuka text-3xl tracking-[0.2em] text-white hover:text-dome-blue transition-colors duration-300">
+        <a href="/" className="z-40 font-manuka text-xl md:text-[24px] lg:text-3xl tracking-[0.2em] text-white hover:text-dome-blue transition-colors duration-300 whitespace-nowrap shrink-0">
           DOME CAFE
         </a>
 
-        {/* Navigation Links */}
-        <nav className={`fixed md:relative inset-0 md:inset-auto z-30 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 bg-black md:bg-transparent transition-transform duration-300 md:translate-x-0 ${menuOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+        {/* Navigation Links (Desktop) */}
+        <nav className="hidden md:flex items-center justify-center gap-4 lg:gap-8 xl:gap-12">
           {['About Us', 'Menu', 'Celebrations', 'Gallery', 'Locations'].map((link) => {
             const url = link === 'Celebrations' ? '#packages' : link === 'Locations' ? '#locations' : '/';
             return (
               <a
                 key={link}
                 href={url}
-                className="font-manuka text-[32px] md:text-[20px] uppercase text-white/60 hover:text-white transition-colors tracking-widest"
-                onClick={() => setMenuOpen(false)}
+                className="font-manuka md:text-[16px] lg:text-[20px] uppercase text-white/60 hover:text-white transition-colors tracking-widest whitespace-nowrap shrink-0"
               >
                 {link}
               </a>
@@ -258,19 +278,50 @@ export default function DomeHomepage() {
         </nav>
 
         {/* Action Button: Book Now */}
-        <a href="/booking" className="hidden md:inline-flex relative overflow-hidden rounded-[4px] border border-white/20 hover:border-white px-6 py-2 text-xs font-semibold uppercase tracking-widest text-white transition-all bg-white/5 hover:bg-white/10">
+        <a href="/booking" className="hidden md:inline-flex relative overflow-hidden rounded-[4px] border border-white/20 hover:border-white px-4 lg:px-6 py-2 text-[10px] lg:text-xs font-semibold uppercase tracking-widest text-white transition-all bg-white/5 hover:bg-white/10 whitespace-nowrap shrink-0">
           Book Now
         </a>
       </header>
 
+      {/* Full-screen Mobile Navigation Drawer with Opacity & Backdrop Blur */}
+      <div
+        className={`fixed inset-0 z-[98] md:hidden bg-black/90 backdrop-blur-2xl transition-opacity duration-300 ease-in-out flex flex-col justify-between pt-[70px] pb-10 px-8 ${
+          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center gap-7 my-auto">
+          {['About Us', 'Menu', 'Celebrations', 'Gallery', 'Locations'].map((link) => {
+            const url = link === 'Celebrations' ? '#packages' : link === 'Locations' ? '#locations' : '/';
+            return (
+              <a
+                key={link}
+                href={url}
+                className="font-manuka text-3xl uppercase text-white/80 hover:text-white transition-colors tracking-widest"
+                onClick={() => setMenuOpen(false)}
+              >
+                {link}
+              </a>
+            );
+          })}
+
+          <a
+            href="/booking"
+            onClick={() => setMenuOpen(false)}
+            className="mt-4 inline-flex items-center justify-center rounded-[4px] border border-white/30 bg-white/10 hover:bg-white/20 px-8 py-3 text-xs font-semibold uppercase tracking-widest text-white transition-all w-[180px]"
+          >
+            Book Now
+          </a>
+        </div>
+      </div>
+
       {/* Main Content */}
-      <main className="relative z-10 pt-[100px]">
+      <main className="relative z-10 pt-[56px] md:pt-[60px]">
         {/* Section 1: Hero Carousel with 3D Curved Cylinder Ring */}
-        <section className="SectionHomepageHero relative min-h-[calc(100vh-100px)] flex flex-col justify-end pb-16">
+        <section className="SectionHomepageHero relative min-h-[calc(100vh-56px)] md:min-h-[calc(100vh-60px)] flex flex-col justify-end pb-16">
           
           {/* Centered 3D Cylinder Ring Carousel Background */}
           <div 
-            className="absolute top-0 left-0 right-0 h-[calc(100vh-100px)] flex items-center justify-center pointer-events-none select-none z-0"
+            className="absolute top-0 left-0 right-0 h-[calc(100vh-56px)] md:h-[calc(100vh-60px)] flex items-center justify-center pointer-events-none select-none z-0"
             style={{
               perspective: `${perspective}px`,
             }}
@@ -326,7 +377,7 @@ export default function DomeHomepage() {
                         src={occasion.image}
                         alt={occasion.name}
                         fill
-                        sizes="(max-width: 640px) 365px, (max-width: 1024px) 740px, 1080px"
+                        sizes="(max-width: 640px) 511px, (max-width: 1024px) 1036px, 1512px"
                         className="object-cover"
                         draggable={false}
                         priority={index === 0}
@@ -346,7 +397,7 @@ export default function DomeHomepage() {
           </div>
 
           {/* Stable Vertical Navigation Arrows on the Right */}
-          <div className="absolute top-0 left-0 right-0 h-[calc(100vh-100px)] w-full max-w-7xl mx-auto px-6 md:px-12 pointer-events-none z-20">
+          <div className="absolute top-0 left-0 right-0 h-[calc(100vh-56px)] md:h-[calc(100vh-60px)] w-full max-w-7xl mx-auto px-6 md:px-12 pointer-events-none z-20">
             <div className="relative w-full h-full">
               <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col gap-4 pointer-events-auto">
                 <button
@@ -372,7 +423,7 @@ export default function DomeHomepage() {
           </div>
 
           {/* Floating controls / Content layered over the carousel */}
-          <div className="w-full max-w-7xl mx-auto px-6 md:px-12 relative flex flex-col justify-end min-h-[calc(100vh-200px)] z-10 pointer-events-none">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-12 relative flex flex-col justify-end min-h-[calc(100vh-200px)] z-10 pointer-events-none">
 
             <div className="w-full flex flex-col lg:flex-row items-center lg:items-end justify-between gap-8 mt-auto">
               {/* Left Content Info Panel */}
@@ -384,33 +435,33 @@ export default function DomeHomepage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -35 }}
                     transition={{ duration: 0.4 }}
-                    className="flex flex-col items-center lg:items-start gap-4"
+                    className="flex flex-col items-center lg:items-start gap-2.5 md:gap-4"
                   >
                     {/* Category Tag Badge */}
-                    <div className="flex items-center gap-3">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-pulse" style={{ color: occasions[activeIndex].accent }}>
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-pulse md:w-5 md:h-5" style={{ color: occasions[activeIndex].accent }}>
                         <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
                       </svg>
-                      <span className="font-manuka text-lg tracking-wider" style={{ color: occasions[activeIndex].accent }}>HOT</span>
-                      <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-semibold tracking-wider text-white/80">
+                      <span className="font-manuka text-sm md:text-lg tracking-wider" style={{ color: occasions[activeIndex].accent }}>HOT</span>
+                      <span className="px-2.5 py-0.5 md:px-3 md:py-1 bg-white/10 rounded-full text-[10px] md:text-xs font-semibold tracking-wider text-white/80">
                         {occasions[activeIndex].category}
                       </span>
                     </div>
 
                     {/* Active Title */}
-                    <h1 className="font-manuka text-6xl md:text-8xl lg:text-9xl leading-none text-white font-bold select-none tracking-tight">
+                    <h1 className="font-manuka text-4xl sm:text-5xl md:text-8xl lg:text-9xl leading-none text-white font-bold select-none tracking-tight">
                       {occasions[activeIndex].name}
                     </h1>
 
                     {/* Active Description */}
-                    <p className="max-w-md text-white/70 text-sm md:text-base leading-relaxed tracking-wider uppercase font-light">
+                    <p className="max-w-xs md:max-w-md text-white/70 text-[11px] sm:text-xs md:text-base leading-normal md:leading-relaxed tracking-wider uppercase font-light">
                       {occasions[activeIndex].description}
                     </p>
 
                     {/* Book Now Button */}
                     <a
                       href={occasions[activeIndex].url}
-                      className="pulse-glow relative mt-4 inline-flex items-center justify-center overflow-hidden rounded-[4px] px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-black transition-transform hover:scale-[1.03] w-[180px]"
+                      className="pulse-glow relative mt-2 md:mt-4 inline-flex items-center justify-center overflow-hidden rounded-[4px] px-6 py-2.5 md:px-8 md:py-3.5 text-xs font-semibold uppercase tracking-widest text-black transition-transform hover:scale-[1.03] w-[150px] md:w-[180px]"
                       style={{
                         background: `linear-gradient(90deg, ${occasions[activeIndex].accent} 0%, #FFFFFF 100%)`,
                       }}
@@ -422,8 +473,8 @@ export default function DomeHomepage() {
               </div>
 
               {/* Right Content Panel: Thumbnails Strip */}
-              <div className="flex flex-col items-center lg:items-end gap-6 pointer-events-auto">
-                <a href="#packages" className="font-mono text-xs uppercase tracking-widest text-white/50 hover:text-white transition-colors flex items-center gap-2">
+              <div className="flex flex-col items-center lg:items-end gap-3 sm:gap-6 pointer-events-auto">
+                <a href="#packages" className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-white/50 hover:text-white transition-colors flex items-center gap-1.5 sm:gap-2">
                   See All Packages
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="9 18 15 12 9 6" />
@@ -431,16 +482,16 @@ export default function DomeHomepage() {
                 </a>
 
                 {/* Thumbnails Row */}
-                <div className="flex gap-4">
+                <div className="flex gap-2 sm:gap-3 md:gap-4 justify-center">
                   {occasions.map((occasion, idx) => {
                     const isActive = idx === activeIndex;
                     return (
                       <button
                         key={occasion.name}
                         onClick={() => handleThumbnailClick(idx)}
-                        className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                        className={`relative w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-md sm:rounded-lg overflow-hidden border-2 transition-all duration-300 ${
                           isActive
-                            ? 'border-white scale-110 shadow-[0_0_20px_0_rgba(255,255,255,0.4)]'
+                            ? 'border-white scale-110 shadow-[0_0_15px_0_rgba(255,255,255,0.4)]'
                             : 'border-transparent opacity-40 hover:opacity-80'
                         }`}
                       >
@@ -448,7 +499,7 @@ export default function DomeHomepage() {
                           src={occasion.image}
                           alt={occasion.name}
                           fill
-                          sizes="64px"
+                          sizes="(max-width: 640px) 44px, (max-width: 768px) 56px, 64px"
                           className="object-cover"
                         />
                       </button>
@@ -491,10 +542,14 @@ export default function DomeHomepage() {
             {/* Right Side: Floating Tilted 3D Spotlight Card */}
             <div className="lg:col-span-5 flex justify-center lg:justify-end">
               <div
-                className="spotlight-card relative max-w-[400px] aspect-[4/3] w-full rounded-2xl p-0.5"
+                className="spotlight-card relative max-w-[360px] sm:max-w-[380px] lg:max-w-[420px] aspect-[4/3] w-full rounded-2xl p-0.5"
                 style={{
                   background: 'linear-gradient(45deg, #A281FF 10%, #EB8280 33%, #EBBF9A 66%, #89D0FF 90%)',
-                  transform: 'perspective(800px) scale(1.4) rotateX(7.5deg) rotateY(-15deg) rotateZ(6deg)',
+                  transform: isMobile
+                    ? 'perspective(800px) scale(1.02) rotateX(4deg) rotateY(-8deg) rotateZ(3deg)'
+                    : isTablet
+                    ? 'perspective(800px) scale(1.1) rotateX(6deg) rotateY(-12deg) rotateZ(4deg)'
+                    : 'perspective(800px) scale(1.35) rotateX(7.5deg) rotateY(-15deg) rotateZ(6deg)',
                 }}
               >
                 {/* Inner Card Content */}
@@ -503,15 +558,15 @@ export default function DomeHomepage() {
                     src="/images/anniversary.png"
                     alt="Anniversaries at Dome Cafe"
                     fill
-                    sizes="(max-width: 768px) 600px, 1000px"
+                    sizes="(max-width: 640px) 360px, (max-width: 1024px) 380px, 600px"
                     className="object-cover opacity-90"
                   />
                   {/* Backdrop Shadow overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
                   
                   {/* Description overlay */}
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <h3 className="font-manuka text-3xl font-bold uppercase text-white mb-1">Luxury Anniversaries</h3>
+                  <div className="absolute bottom-5 sm:bottom-6 left-5 sm:left-6 right-5 sm:right-6">
+                    <h3 className="font-manuka text-2xl sm:text-2xl lg:text-3xl font-bold uppercase text-white mb-1">Luxury Anniversaries</h3>
                     <p className="font-mono text-[10px] tracking-wider uppercase text-white/60">
                       Private romantic dome setups under the stars in Hyderabad.
                     </p>
